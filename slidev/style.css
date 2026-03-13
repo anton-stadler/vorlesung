@@ -1,0 +1,322 @@
+/* ============================================================
+   Dracula-inspired Theme für Event Sourcing Vorlesung
+   Dark & Light Mode – toggle via Slidev UI (⊙-Button)
+   ============================================================ */
+
+:root {
+  /* ── Light Mode — Semantische Basis ────────────────────── */
+  --slide-bg:        #F8F8F4;
+  --slide-bg-card:   #E8E8E8;
+  --slide-fg:        #282A36;
+  --slide-border:    #CCCCCC;
+  --slide-muted:     #5A6A8A;
+
+  /* ── Light Mode — Akzentfarben (gesättigter, lesbar auf hell) */
+  --accent-cyan:     #007BAA;
+  --accent-pink:     #C0397A;
+  --accent-purple:   #6B3FBB;
+  --accent-green:    #1E8040;
+  --accent-orange:   #B85E00;
+  --accent-red:      #BB2222;
+  --accent-yellow:   #9A7700;
+  --accent-comment:  #5A6A8A;
+
+  /* ── Dracula-Namen als Aliases (für Komponenten & Badges) */
+  --dracula-cyan:    var(--accent-cyan);
+  --dracula-pink:    var(--accent-pink);
+  --dracula-purple:  var(--accent-purple);
+  --dracula-green:   var(--accent-green);
+  --dracula-orange:  var(--accent-orange);
+  --dracula-red:     var(--accent-red);
+  --dracula-yellow:  var(--accent-yellow);
+  --dracula-comment: var(--accent-comment);
+}
+
+/* ── Dark Mode overrides ─────────────────────────────────── */
+html.dark {
+  --slide-bg:        #282A36;
+  --slide-bg-card:   #44475A;
+  --slide-fg:        #F8F8F2;
+  --slide-border:    #44475A;
+  --slide-muted:     #6272A4;
+
+  /* Dracula-Originalfarben im Dark Mode */
+  --accent-cyan:     #8BE9FD;
+  --accent-pink:     #FF79C6;
+  --accent-purple:   #BD93F9;
+  --accent-green:    #50FA7B;
+  --accent-orange:   #FFB86C;
+  --accent-red:      #FF5555;
+  --accent-yellow:   #F1FA8C;
+  --accent-comment:  #6272A4;
+}
+
+/* ── Base layout ─────────────────────────────────────────── */
+
+.slidev-layout {
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding-bottom: 2.5rem;
+}
+
+/* ── Utility color classes ───────────────────────────────── */
+
+.accent-pink    { color: var(--accent-pink); }
+.accent-cyan    { color: var(--accent-cyan); }
+.accent-green   { color: var(--accent-green); }
+.accent-orange  { color: var(--accent-orange); }
+.accent-purple  { color: var(--accent-purple); }
+.accent-red     { color: var(--accent-red); }
+.accent-yellow  { color: var(--accent-yellow); }
+.accent-comment { color: var(--accent-comment); }
+.muted          { color: var(--slide-muted); }
+.check          { color: var(--accent-green); }
+.cross          { color: var(--accent-red); }
+
+/* ── SLIDE 1: Cover ──────────────────────────────────────── */
+
+.cover-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  gap: 1.2rem;
+}
+
+.cover-tag {
+  color: var(--slide-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--slide-muted);
+  padding: 0.25rem 1rem;
+  border-radius: 999px;
+}
+
+.cover-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.cover-author {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--slide-fg);
+}
+
+.cover-org {
+  font-size: 0.8rem;
+}
+
+.cover-footer {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.badge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.badge-purple { color: var(--accent-purple); border-color: var(--accent-purple); }
+.badge-blue   { color: var(--accent-cyan);   border-color: var(--accent-cyan);   }
+.badge-cyan   { color: var(--accent-cyan);   border-color: var(--accent-cyan);   }
+.badge-pink   { color: var(--accent-pink);   border-color: var(--accent-pink);   }
+.badge-green  { color: var(--accent-green);  border-color: var(--accent-green);  }
+
+.cover-institution {
+  font-size: 0.72rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Slide-Header (alle Inhaltsfolien) ───────────────────── */
+
+.slide-header {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--slide-border);
+  padding-bottom: 0.4rem;
+}
+
+/* ── SLIDE 2: Das Problem ────────────────────────────────── */
+
+.scenario-label {
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+}
+
+.problem-layout {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.db-box {
+  background: var(--slide-bg-card);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 180px;
+}
+
+.db-icon {
+  font-size: 1.8rem;
+}
+
+.db-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.3rem 0;
+}
+
+.db-field {
+  font-size: 0.78rem;
+  color: var(--slide-fg);
+}
+
+.problem-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.problem-insight {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--slide-muted);
+  padding: 0.75rem 1.5rem;
+  border-left: 3px solid var(--accent-orange);
+  background: rgba(255, 184, 108, 0.07);
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+/* ── SLIDE 3: Einordnung ─────────────────────────────────── */
+
+.col-title {
+  display: inline-block;        /* Border nur unter dem Text, nicht über volle Spalte */
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid currentColor;
+}
+
+.check-list,
+.cross-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.check-list li::before {
+  content: '✓ ';
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+.cross-list li::before {
+  content: '✗ ';
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.check-list li,
+.cross-list li {
+  font-size: 0.82rem;
+  padding-left: 1.4em;
+  text-indent: -1.4em;
+}
+
+.examples-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.example-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.example-icon {
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.example-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.example-desc {
+  font-size: 0.72rem;
+}
+
+.insight-box {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--slide-border);
+  border-radius: 0.5rem;
+  background: rgba(98, 114, 164, 0.08);
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.insight-line {
+  margin-bottom: 0.1rem;
+}
+
+/* ── SLIDE 4: Cards Grid ─────────────────────────────────── */
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+/* ── Two-cols layout spacing ─────────────────────────────── */
+
+.slidev-layout.two-cols > :first-child {
+  padding-right: 1.5rem;
+}
+
+.slidev-layout.two-cols > :last-child {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--slide-border);
+}
+
+/* two-cols-header: interne Slots heißen .col-left / .col-right */
+.slidev-layout.two-cols-header .col-left {
+  padding-right: 1.5rem;
+}
+
+.slidev-layout.two-cols-header .col-right {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--slide-border);
+}
