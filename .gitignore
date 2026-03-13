@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Slidev Build & Cache
+slidev/dist/
+.slidev/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE & Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs & Env
+*.log
+.env
+.env.local
+.env.*.local
+
+# Cursor/Claude (lokale Einstellungen)
+.claude/
+
+# Optional: Build-Output falls im Root
+dist/
