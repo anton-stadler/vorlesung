@@ -6,6 +6,8 @@ lineNumbers: false
 colorSchema: auto
 fonts:
   mono: JetBrains Mono
+addons:
+  - prime
 ---
 
 <!-- SLIDE 1 — COVER -->

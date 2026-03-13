@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "slidev-addon-prime": "^0.3.1",
+    "slidev-theme-neversink": "^0.4.1"
+  }
+}
