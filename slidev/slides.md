@@ -9,10 +9,7 @@ fonts:
 addons:
   - prime
   - slidev-addon-rosenheim-shared
----
 
----
-layout: cover-with-footer
 ---
 
 <!-- SLIDE 1 — COVER -->
