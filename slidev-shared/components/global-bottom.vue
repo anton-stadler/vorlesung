@@ -1,0 +1,54 @@
+<template>
+  <div class="global-footer">
+    <span class="footer-slash">//</span>
+    TH Rosenheim · 2026
+    <span class="footer-spacer" />
+    <span class="footer-num">{{ String($nav.currentPage).padStart(2, '0') }}</span>
+    <span class="footer-sep"> / </span>
+    <span class="footer-total">{{ String($nav.total).padStart(2, '0') }}</span>
+  </div>
+</template>
+
+<style scoped>
+.global-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  border-top: 1px solid var(--slide-border, #CCCCCC);
+  background: var(--slide-bg, #F8F8F4);
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.62rem;
+  color: var(--slide-muted, #5A6A8A);
+  letter-spacing: 0.05em;
+  z-index: 9999;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.footer-slash {
+  color: var(--accent-pink, #C0397A);
+  font-weight: 700;
+}
+
+.footer-spacer {
+  flex: 1;
+}
+
+.footer-num {
+  color: var(--accent-cyan, #007BAA);
+  font-weight: 700;
+}
+
+.footer-sep {
+  opacity: 0.4;
+}
+
+.footer-total {
+  opacity: 0.5;
+}
+</style>

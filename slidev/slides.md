@@ -8,6 +8,7 @@ fonts:
   mono: JetBrains Mono
 addons:
   - prime
+  - slidev-addon-rosenheim-shared
 ---
 
 <!-- SLIDE 1 — COVER -->

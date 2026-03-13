@@ -1,0 +1,7 @@
+{
+  "name": "slidev-addon-rosenheim-shared",
+  "version": "1.0.0",
+  "description": "Gemeinsame Komponenten und Styles für TH Rosenheim Slidev-Präsentationen",
+  "keywords": ["slidev-addon", "slidev"],
+  "private": true
+}
