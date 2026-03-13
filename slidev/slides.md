@@ -11,6 +11,10 @@ addons:
   - slidev-addon-rosenheim-shared
 ---
 
+---
+layout: cover-with-footer
+---
+
 <!-- SLIDE 1 — COVER -->
 <div class="cover-wrap">
   <div class="cover-tag">Probelehrveranstaltung · TH Rosenheim · 20.03.2026</div>
@@ -40,7 +44,7 @@ addons:
 </div>
 
 ---
-layout: default
+layout: default-with-footer
 ---
 
 <!-- SLIDE 2 — DAS PROBLEM -->
@@ -77,7 +81,7 @@ layout: default
 </div>
 
 ---
-layout: two-cols-header
+layout: two-cols-header-with-footer
 ---
 
 <!-- SLIDE 3 — EINORDNUNG -->
@@ -156,7 +160,7 @@ layout: two-cols-header
 </div>
 
 ---
-layout: default
+layout: default-with-footer
 ---
 
 <!-- SLIDE 4 — BACKUP: VERTIEFUNG -->

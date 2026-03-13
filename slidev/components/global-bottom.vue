@@ -1,18 +1,22 @@
+<script setup>
+import { useNav } from '@slidev/client'
+const { currentPage, total } = useNav()
+</script>
+
 <template>
-  <div class="global-footer">
+  <div class="global-footer" role="contentinfo" aria-label="Fußzeile: Event Sourcing, TH Rosenheim, Seitennummer">
     <span class="footer-slash">//</span>
     Event Sourcing · TH Rosenheim · 2026
     <span class="footer-spacer" />
-    <span class="footer-num">{{ String($nav.currentPage).padStart(2, '0') }}</span>
+    <span class="footer-num">{{ String(currentPage).padStart(2, '0') }}</span>
     <span class="footer-sep"> / </span>
-    <span class="footer-total">{{ String($nav.total).padStart(2, '0') }}</span>
+    <span class="footer-total">{{ String(total).padStart(2, '0') }}</span>
   </div>
 </template>
 
 <style scoped>
 .global-footer {
-  /* absolute: Fußzeile am unteren Rand des Slide-Containers (skalierter Bereich);
-     fixed würde sich im Slidev-Inneren auf den gleichen Bereich beziehen, absolute ist hier klarer */
+  /* Am unteren Rand der Folie, nicht des Viewports – Control-Leiste bleibt sichtbar */
   position: absolute;
   bottom: 0;
   left: 0;
@@ -28,7 +32,6 @@
   font-size: 0.62rem;
   color: var(--slide-muted, #5A6A8A);
   letter-spacing: 0.05em;
-  z-index: 9999;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 }
 
