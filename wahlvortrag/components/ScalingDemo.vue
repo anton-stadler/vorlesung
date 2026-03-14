@@ -4,24 +4,24 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 // ── Layout constants (SVG coordinate space 800 × 250) ─────────────────────────
 const SVG_W = 800
 const SVG_H = 250
-const BRX = 305   // broker left x
-const BRW = 155   // broker width
-const BRY = 55    // broker top y
-const BRH = 138   // broker height
-const WRK_X = 590 // worker / server column start x
+const BRX = 305
+const BRW = 155
+const BRY = 55
+const BRH = 138
+const WRK_X = 590
 
-// ── Labels / tables ───────────────────────────────────────────────────────────
-const VLABELS = ['small', 'medium', 'large', 'x-large']
-const VRATES  = [3, 6, 12, 24]
-const VCOSTS  = [0.50, 2.00, 8.00, 32.00]
-const MTITLES = [
+// ── Labels ────────────────────────────────────────────────────────────────────
+const VLABELS    = ['small', 'medium', 'large', 'x-large']
+const VCOSTS     = [0.50, 2.00, 8.00, 32.00]
+const VRATE_MULT = [1, 2, 4, 8]   // multipliers relative to baseRate
+const MTITLES    = [
   'Direct Connection — No Broker',
   'Broker + Vertical Scaling',
   'Broker + Horizontal Scaling (Manual)',
   'Auto-Scale (KEDA)',
 ]
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── Core state ────────────────────────────────────────────────────────────────
 const mode          = ref(1)
 const cameras       = ref(3)
 const verticalSize  = ref(1)
@@ -31,29 +31,45 @@ const queueLength   = ref(0)
 const messagesLost  = ref(0)
 const packets       = ref([])
 const cameraFiring  = reactive({})
-const PROCESSING_TIME_MS = 200
-const FIRE_ANIM_MS  = 1000
 const isBurst       = ref(false)
 const canvasOpacity = ref(1)
 
-const CAMERA_FIRES_PER_SEC = 2
-const CAMERA_FIRE_INTERVAL_MS = 1000 / CAMERA_FIRES_PER_SEC
+const PROCESSING_TIME_MS = 200
+const FIRE_ANIM_MS       = 800
+const MAX_PACKETS        = 28
 
-let packetId    = 0
-let workerId    = 1
-let intervalId  = null
-let cameraFireTimeoutId = null
-let burstTimer  = null
-let scaleUpCD   = 0
-let scaleDownCD = 0
+let packetId          = 0
+let workerId          = 1
+let intervalId        = null
+let cameraFireTimeout = null
+let burstTimer        = null
+let scaleUpCD         = 0
+let scaleDownCD       = 0
 let cameraFireStopped = false
-const MAX_PACKETS = 28
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+const settingsOpen   = ref(false)
+const ratePerCamera  = ref(0.5)   // req/s per camera (default ½/s)
+const baseRate       = ref(1.0)   // processing fps for small instance
+const randomizer     = ref(0)     // 0 = deterministic, 1 = chaotic
+const showAnimations = ref(true)  // camera flash + dashed connectors
+
+const randomizerLabel = computed(() => {
+  const r = randomizer.value
+  if (r < 0.01) return 'gleichmäßig'
+  if (r < 0.30) return 'leicht variabel'
+  if (r < 0.60) return 'variabel'
+  if (r < 0.85) return 'burstig'
+  return 'chaotisch'
+})
+
+// connectorDash is now per-camera (see template) — this helper is no longer used
 
 // ── Dark mode detection ───────────────────────────────────────────────────────
 const isDark = ref(false)
 let darkObserver = null
 
-// ── Color palette (light / dark) ──────────────────────────────────────────────
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = computed(() => isDark.value ? {
   bg:        '#282A36',
   card:      '#383A4A',
@@ -69,6 +85,8 @@ const C = computed(() => isDark.value ? {
   connector: '#44475A',
   barBg:     '#44475A',
   camLens:   '#44475A',
+  flash:     '#F1FA8C',   // Dracula yellow
+  flashLine: '#8BE9FD',   // bright cyan for line flash
 } : {
   bg:        '#F8FAFC',
   card:      '#FFFFFF',
@@ -84,23 +102,25 @@ const C = computed(() => isDark.value ? {
   connector: '#CBD5E1',
   barBg:     '#E2E8F0',
   camLens:   '#E2E8F0',
+  flash:     '#F59E0B',   // amber yellow
+  flashLine: '#028090',   // teal for line flash
 })
 
 // ── Camera positions ──────────────────────────────────────────────────────────
 const camPositions = computed(() => {
-  const n    = cameras.value
-  const step = Math.max(40, (SVG_H - 50) / Math.max(n, 1))
+  const n     = cameras.value
+  const step  = Math.max(40, (SVG_H - 50) / Math.max(n, 1))
   const total = (n - 1) * step
   const sy    = (SVG_H - total) / 2
   return Array.from({ length: n }, (_, i) => ({ x: 76, y: Math.round(sy + i * step) }))
 })
 
-// ── Worker grid helper ────────────────────────────────────────────────────────
+// ── Worker grid ───────────────────────────────────────────────────────────────
 function workerGrid(count) {
   const cols = 2, bW = 74, bH = 38, gX = 8, gY = 8
-  const rows  = Math.ceil(count / cols)
-  const totH  = rows * bH + (rows - 1) * gY
-  const sy    = Math.max(16, Math.round((SVG_H - totH) / 2))
+  const rows = Math.ceil(count / cols)
+  const totH = rows * bH + (rows - 1) * gY
+  const sy   = Math.max(16, Math.round((SVG_H - totH) / 2))
   return Array.from({ length: count }, (_, i) => ({
     x: WRK_X + (i % cols) * (bW + gX),
     y: sy + Math.floor(i / cols) * (bH + gY),
@@ -117,29 +137,15 @@ const sBox = computed(() => {
   return { x: WRK_X, y: Math.round((SVG_H - s.h) / 2), ...s }
 })
 
-// ── Ankerpunkte auf der linken Kante des Broker/Server (25 %–75 % der Höhe) ───
-const camArrowTargets = computed(() => {
-  const n = cameras.value
-  let targetX, topY, boxH
-  if (mode.value === 1) {
-    const s = sBox.value
-    targetX = s.x; topY = s.y; boxH = s.h
-  } else {
-    targetX = BRX; topY = BRY; boxH = BRH
-  }
-  return Array.from({ length: n }, (_, i) => {
-    const t = n <= 1 ? 0.5 : 0.25 + (i / (n - 1)) * 0.5
-    return { x: targetX, y: Math.round(topY + boxH * t) }
-  })
+// ── Metrics ───────────────────────────────────────────────────────────────────
+const incomingRate = computed(() => cameras.value * ratePerCamera.value)
+
+const processingRate = computed(() => {
+  if (mode.value <= 2) return baseRate.value * VRATE_MULT[verticalSize.value - 1]
+  if (mode.value === 3) return manualWorkers.value * baseRate.value
+  return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * baseRate.value
 })
 
-// ── Metrics ───────────────────────────────────────────────────────────────────
-const processingRate = computed(() => {
-  if (mode.value <= 2) return VRATES[verticalSize.value - 1]
-  if (mode.value === 3) return manualWorkers.value * 3
-  return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * 3
-})
-const incomingRate  = computed(() => cameras.value * 0.5)
 const throughput    = computed(() => Math.round(Math.min(processingRate.value, incomingRate.value)))
 const isOverloaded  = computed(() => mode.value === 1 && queueLength.value > 5)
 const costPerHour   = computed(() => {
@@ -149,9 +155,8 @@ const costPerHour   = computed(() => {
 })
 
 const workerUtilPct = computed(() => {
-  const capacity = processingRate.value
-  if (capacity <= 0) return 0
-  return Math.min(1, incomingRate.value / capacity)
+  const cap = processingRate.value
+  return cap <= 0 ? 0 : Math.min(1, incomingRate.value / cap)
 })
 
 const effectiveLoad = computed(() =>
@@ -161,8 +166,7 @@ const effectiveLoad = computed(() =>
 const latencyMs = computed(() => {
   const rate = processingRate.value
   if (rate <= 0) return null
-  const queueWaitMs = (queueLength.value / rate) * 1000
-  return Math.round(queueWaitMs + PROCESSING_TIME_MS)
+  return Math.round((queueLength.value / rate) * 1000 + PROCESSING_TIME_MS)
 })
 
 const queueBarW  = computed(() => Math.round((Math.min(queueLength.value, 20) / 20) * (BRW - 22)))
@@ -171,6 +175,15 @@ const queueColor = computed(() =>
   queueLength.value >= 5 ? C.value.orange :
   C.value.cyan
 )
+
+// ── Camera fire delay (with randomizer) ───────────────────────────────────────
+function getFireDelay() {
+  const base = 1000 / Math.max(0.1, cameras.value * ratePerCamera.value)
+  const r = randomizer.value
+  if (r < 0.001) return base
+  const noise = (Math.random() * 2 - 1) * r * 2
+  return Math.max(50, base * (1 + noise))
+}
 
 // ── Packets ───────────────────────────────────────────────────────────────────
 function spawnPacket(x1, y1, x2, y2, color, ms) {
@@ -187,17 +200,17 @@ function fireOneCamera() {
   try {
     const n = cameras.value
     if (n < 1) return
-    const camIdx = Math.floor(Math.random() * n)
-    cameraFiring[camIdx] = true
-    setTimeout(() => { cameraFiring[camIdx] = false }, FIRE_ANIM_MS)
+    if (showAnimations.value) {
+      const idx = Math.floor(Math.random() * n)
+      cameraFiring[idx] = true
+      setTimeout(() => { cameraFiring[idx] = false }, FIRE_ANIM_MS)
+    }
   } finally {
     if (!cameraFireStopped) {
-      cameraFireTimeoutId = setTimeout(fireOneCamera, CAMERA_FIRE_INTERVAL_MS)
+      cameraFireTimeout = setTimeout(fireOneCamera, getFireDelay())
     }
   }
 }
-
-function spawnCameraPackets() {}
 
 function spawnBrokerPackets() {
   if (mode.value === 1 || queueLength.value <= 0) return
@@ -246,13 +259,12 @@ function runKEDA() {
 
 // ── Tick ──────────────────────────────────────────────────────────────────────
 function tick() {
-  const inc   = incomingRate.value  * 0.2
-  const proc  = processingRate.value * 0.2
+  const inc     = incomingRate.value   * 0.2
+  const proc    = processingRate.value * 0.2
   const wouldBe = queueLength.value + inc - proc
   if (wouldBe > 20) messagesLost.value += Math.round(wouldBe - 20)
   queueLength.value = Math.max(0, Math.min(20, wouldBe))
   if (mode.value === 4) runKEDA()
-  spawnCameraPackets()
   spawnBrokerPackets()
 }
 
@@ -288,14 +300,15 @@ onMounted(() => {
 
   cameraFireStopped = false
   intervalId = setInterval(tick, 200)
-  cameraFireTimeoutId = setTimeout(fireOneCamera, CAMERA_FIRE_INTERVAL_MS)
+  cameraFireTimeout = setTimeout(fireOneCamera, getFireDelay())
 })
+
 onUnmounted(() => {
   darkObserver?.disconnect()
   cameraFireStopped = true
   clearInterval(intervalId)
-  if (cameraFireTimeoutId) clearTimeout(cameraFireTimeoutId)
-  if (burstTimer) clearTimeout(burstTimer)
+  if (cameraFireTimeout) clearTimeout(cameraFireTimeout)
+  if (burstTimer)        clearTimeout(burstTimer)
 })
 </script>
 
@@ -310,6 +323,7 @@ onUnmounted(() => {
           Mode {{ m }}
         </button>
       </div>
+
       <div class="sliders-row">
         <label class="sl">
           Cameras <strong>{{ cameras }}</strong>
@@ -327,6 +341,60 @@ onUnmounted(() => {
           {{ isBurst ? '🔥 Bursting…' : '🔥 Fire burst!' }}
         </button>
       </div>
+
+      <!-- Settings gear -->
+      <div class="settings-wrap">
+        <button
+          class="settings-btn"
+          :class="{ active: settingsOpen }"
+          @click="settingsOpen = !settingsOpen"
+          title="Einstellungen">⚙</button>
+
+        <Transition name="spanel">
+          <div v-if="settingsOpen" class="settings-panel">
+            <div class="sp-title">
+              Einstellungen
+              <button class="sp-close" @click="settingsOpen = false">×</button>
+            </div>
+
+            <div class="sp-row">
+              <span class="sp-label">Req / Kamera</span>
+              <input type="range" min="0.1" max="2" step="0.1"
+                     v-model.number="ratePerCamera" class="sp-slider" />
+              <span class="sp-val">{{ ratePerCamera.toFixed(1) }}/s</span>
+            </div>
+
+            <div class="sp-row">
+              <span class="sp-label">Rate / Instanz <span class="sp-sub">(small)</span></span>
+              <input type="range" min="0.5" max="6" step="0.5"
+                     v-model.number="baseRate" class="sp-slider" />
+              <span class="sp-val">{{ baseRate.toFixed(1) }}/s</span>
+            </div>
+
+            <div class="sp-sep"></div>
+
+            <div class="sp-row">
+              <span class="sp-label">Randomizer</span>
+              <input type="range" min="0" max="1" step="0.05"
+                     v-model.number="randomizer" class="sp-slider" />
+              <span class="sp-val sp-rand-label">{{ randomizerLabel }}</span>
+            </div>
+
+            <div class="sp-sep"></div>
+
+            <div class="sp-row sp-row-toggle">
+              <span class="sp-label">Animationen</span>
+              <label class="sp-toggle">
+                <input type="checkbox" v-model="showAnimations" />
+                <span class="sp-toggle-track" :class="{ on: showAnimations }">
+                  <span class="sp-toggle-thumb"></span>
+                </span>
+                <span class="sp-toggle-lbl">{{ showAnimations ? 'an' : 'aus' }}</span>
+              </label>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
 
     <!-- Mode title -->
@@ -341,58 +409,52 @@ onUnmounted(() => {
         <!-- Background -->
         <rect width="800" height="250" rx="6" :fill="C.bg" />
 
-        <!-- Pfeilspitzen-Marker -->
-        <defs>
-          <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-            <path d="M0,0.5 L0,6.5 L6.5,3.5 z" :fill="C.vMuted" />
-          </marker>
-        </defs>
-
-        <!-- ── Connector lines: cameras → Broker/Server, verteilt 25 %–75 %, Pfeil, aktiv = durchgezogen ── -->
+        <!-- Connector lines: cameras → target (flash solid when camera fires) -->
         <line v-for="(cam, i) in camPositions" :key="`cl-${i}`"
-          :x1="cam.x + 5" :y1="cam.y"
-          :x2="camArrowTargets[i].x" :y2="camArrowTargets[i].y"
-          :stroke="cameraFiring[i] ? C.cyan : C.connector"
-          stroke-width="1"
-          :stroke-dasharray="cameraFiring[i] ? 'none' : '4 3'"
-          marker-end="url(#arr)" />
+          :x1="cam.x + 19" :y1="cam.y"
+          :x2="mode === 1 ? sBox.x : BRX"
+          :y2="mode === 1 ? sBox.y + sBox.h / 2 : BRY + BRH / 2"
+          :stroke="showAnimations && cameraFiring[i] ? C.flashLine : C.connector"
+          :stroke-width="showAnimations && cameraFiring[i] ? 2 : 1"
+          :stroke-dasharray="showAnimations && cameraFiring[i] ? '' : '4 3'" />
 
-        <!-- Connector: broker → server (Mode 2) -->
+        <!-- Connector: broker → server (Mode 2) — always dashed -->
         <line v-if="mode === 2"
           :x1="BRX + BRW" :y1="BRY + BRH / 2"
           :x2="sBox.x" :y2="sBox.y + sBox.h / 2"
           :stroke="C.connector" stroke-width="1" stroke-dasharray="4 3" />
 
-        <!-- Connectors: broker → workers (Mode 3) -->
+        <!-- Connectors: broker → workers (Mode 3) — always dashed -->
         <line v-if="mode === 3" v-for="(wp, i) in mode3Positions" :key="`wl3-${i}`"
           :x1="BRX + BRW" :y1="BRY + BRH / 2"
           :x2="wp.x" :y2="wp.y + wp.h / 2"
           :stroke="C.connector" stroke-width="1" stroke-dasharray="4 3" />
 
-        <!-- Connectors: broker → auto-workers (Mode 4) -->
+        <!-- Connectors: broker → auto-workers (Mode 4) — always dashed -->
         <line v-if="mode === 4" v-for="(wp, i) in mode4Positions" :key="`wl4-${i}`"
           :x1="BRX + BRW" :y1="BRY + BRH / 2"
           :x2="wp.x" :y2="wp.y + wp.h / 2"
           :stroke="C.connector" stroke-width="1" stroke-dasharray="4 3" />
 
-        <!-- ── Left: Requests (incoming req/s) ── -->
+        <!-- Left: Requests -->
         <g>
           <text x="22" y="118" text-anchor="middle" :fill="C.muted" style="font-size:9px;font-weight:bold">Requests</text>
-          <text x="22" y="132" text-anchor="middle" :fill="C.cyan" style="font-size:11px;font-weight:bold">{{ incomingRate }}</text>
+          <text x="22" y="132" text-anchor="middle" :fill="C.cyan" style="font-size:11px;font-weight:bold">{{ incomingRate.toFixed(1) }}</text>
           <text x="22" y="144" text-anchor="middle" :fill="C.vMuted" style="font-size:8px">req/s</text>
         </g>
 
-        <!-- ── CAMERAS ── -->
+        <!-- CAMERAS -->
         <g v-for="(cam, i) in camPositions" :key="`cam-${i}`">
           <text :x="cam.x + 14" :y="cam.y + 4" style="font-size:14px"
-                class="cam-flash" :class="{ firing: cameraFiring[i] }">⚡</text>
-          <rect :x="cam.x - 12" :y="cam.y - 8"  width="16" height="12" rx="2" :fill="C.cyan" />
+                :fill="C.flash"
+                class="cam-flash" :class="{ firing: showAnimations && cameraFiring[i] }">⚡</text>
+          <rect :x="cam.x - 12" :y="cam.y - 8" width="16" height="12" rx="2" :fill="C.cyan" />
           <circle :cx="cam.x - 4" :cy="cam.y - 2" r="4"   :fill="C.camLens" />
           <circle :cx="cam.x - 4" :cy="cam.y - 2" r="2.5" :fill="C.cyan" />
           <rect :x="cam.x - 10" :y="cam.y - 13" width="5" height="4" rx="1" :fill="C.cyan" />
         </g>
 
-        <!-- ── BROKER (Modes 2, 3, 4) ── -->
+        <!-- BROKER (Modes 2, 3, 4) -->
         <g v-if="mode > 1">
           <rect :x="BRX" :y="BRY" :width="BRW" :height="BRH"
                 rx="7" :fill="C.card" :stroke="C.orange" stroke-width="2" />
@@ -413,12 +475,12 @@ onUnmounted(() => {
           <text :x="BRX + BRW - 11" :y="BRY + 63" text-anchor="end" :fill="C.vMuted" style="font-size:7.5px">20</text>
           <line :x1="BRX + 8" :y1="BRY + 72" :x2="BRX + BRW - 8" :y2="BRY + 72"
                 :stroke="C.border" stroke-width="1" />
-          <text :x="BRX + 11" :y="BRY + 83" :fill="C.vMuted" style="font-size:7.5px">Incoming rate</text>
+          <text :x="BRX + 11"       :y="BRY + 83" :fill="C.vMuted" style="font-size:7.5px">Incoming rate</text>
           <text :x="BRX + BRW - 11" :y="BRY + 83" text-anchor="end" :fill="C.cyan" font-weight="bold"
-                style="font-size:8px">{{ incomingRate }} fps</text>
-          <text :x="BRX + 11" :y="BRY + 96" :fill="C.vMuted" style="font-size:7.5px">Processing rate</text>
+                style="font-size:8px">{{ incomingRate.toFixed(1) }} fps</text>
+          <text :x="BRX + 11"       :y="BRY + 96" :fill="C.vMuted" style="font-size:7.5px">Processing rate</text>
           <text :x="BRX + BRW - 11" :y="BRY + 96" text-anchor="end" :fill="C.purple" font-weight="bold"
-                style="font-size:8px">{{ processingRate }} fps</text>
+                style="font-size:8px">{{ processingRate.toFixed(1) }} fps</text>
           <text :x="BRX + BRW / 2" :y="BRY + BRH - 10" text-anchor="middle" :fill="C.vMuted"
                 style="font-size:7.5px;font-style:italic">MQTT / RabbitMQ</text>
           <text :x="BRX + BRW / 2" :y="BRY + BRH + 18" text-anchor="middle" :fill="C.muted"
@@ -427,7 +489,7 @@ onUnmounted(() => {
                 style="font-size:11px;font-weight:bold">{{ throughput }} req/s</text>
         </g>
 
-        <!-- ── Throughput (Mode 1: no broker) ── -->
+        <!-- Throughput (Mode 1: no broker) -->
         <g v-if="mode === 1">
           <text :x="(76 + sBox.x + sBox.w/2) / 2" :y="SVG_H - 28" text-anchor="middle" :fill="C.muted"
                 style="font-size:8px">Throughput</text>
@@ -435,13 +497,12 @@ onUnmounted(() => {
                 style="font-size:11px;font-weight:bold">{{ throughput }} req/s</text>
         </g>
 
-        <!-- ── SERVER (Modes 1 & 2) ── -->
+        <!-- SERVER (Modes 1 & 2) -->
         <g v-if="mode <= 2">
           <text :x="sBox.x + sBox.w/2" :y="sBox.y - 44" text-anchor="middle" :fill="C.muted"
                 style="font-size:8px">Capacity</text>
           <text :x="sBox.x + sBox.w/2" :y="sBox.y - 30" text-anchor="middle" :fill="C.purple"
-                style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
-
+                style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <rect v-if="isOverloaded"
                 :x="sBox.x - 5" :y="sBox.y - 5" :width="sBox.w + 10" :height="sBox.h + 10"
                 rx="11" :fill="C.red" class="overload-glow" />
@@ -462,10 +523,10 @@ onUnmounted(() => {
                 style="font-size:11px">{{ VLABELS[verticalSize - 1] }}</text>
         </g>
 
-        <!-- ── Right: Capacity (Mode 3) ── -->
+        <!-- WORKERS (Mode 3) -->
         <g v-if="mode === 3">
           <text x="668" y="22" text-anchor="middle" :fill="C.muted" style="font-size:8px">Capacity</text>
-          <text x="668" y="36" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
+          <text x="668" y="36" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <g v-for="(wp, i) in mode3Positions" :key="`w3-${i}`">
             <rect :x="wp.x" :y="wp.y" :width="wp.w" :height="wp.h"
                   rx="5" :fill="C.card" :stroke="C.purple" stroke-width="1.5" />
@@ -475,14 +536,13 @@ onUnmounted(() => {
           </g>
         </g>
 
-        <!-- ── AUTO-SCALE WORKERS (Mode 4) ── -->
+        <!-- AUTO-SCALE WORKERS (Mode 4) -->
         <g v-if="mode === 4">
           <rect x="634" y="10" width="52" height="18" rx="9" :fill="C.purple" />
           <text x="660" y="23" text-anchor="middle" fill="white" font-weight="bold"
                 style="font-size:9.5px">KEDA</text>
           <text x="668" y="38" text-anchor="middle" :fill="C.muted" style="font-size:8px">Capacity</text>
-          <text x="668" y="52" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
-
+          <text x="668" y="52" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <g v-for="(w, i) in autoWorkers" :key="w.id"
              :style="{ opacity: w.status === 'stopping' ? 0 : w.status === 'starting' ? 0.55 : 1,
                        transition: 'opacity 0.4s ease' }">
@@ -493,9 +553,7 @@ onUnmounted(() => {
                     :stroke="w.status === 'starting' ? C.orange : C.purple"
                     stroke-width="1.5" />
               <text :x="mode4Positions[i].x + 12" :y="mode4Positions[i].y + 16"
-                    style="font-size:11px">
-                {{ w.status === 'starting' ? '⏳' : '⚙' }}
-              </text>
+                    style="font-size:11px">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
               <text :x="mode4Positions[i].x + 27" :y="mode4Positions[i].y + 15"
                     :fill="C.fg" font-weight="bold" style="font-size:9px">
                 {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
@@ -529,7 +587,7 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="metric" :class="{ 'metric-lost': messagesLost > 0 }">
-        <div class="m-label">Message lost</div>
+        <div class="m-label">Messages lost</div>
         <div class="m-val" :style="{ color: messagesLost > 0 ? C.red : undefined }">{{ Math.round(messagesLost) }}</div>
       </div>
       <div class="metric">
@@ -543,10 +601,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ── Reset SVG font inheritance ─────────────────────────────────────────────── */
+/* ── SVG font reset ──────────────────────────────────────────────────────────── */
 .sd-canvas :deep(svg) { font-size: 1px !important; }
 
-/* ── Container ──────────────────────────────────────────────────────────────── */
+/* ── Container ───────────────────────────────────────────────────────────────── */
 .sd {
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   background: var(--slide-bg, #F8FAFC);
@@ -561,10 +619,10 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-/* ── Controls ───────────────────────────────────────────────────────────────── */
+/* ── Controls row ────────────────────────────────────────────────────────────── */
 .sd-ctrl {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -580,13 +638,13 @@ onUnmounted(() => {
   cursor: pointer;
   transition: background 0.18s, color 0.18s, border-color 0.18s;
 }
-.mpill.active { background: var(--accent-cyan, #028090); color: white; border-color: var(--accent-cyan, #028090); }
+.mpill.active         { background: var(--accent-cyan, #028090); color: white; border-color: var(--accent-cyan, #028090); }
 .mpill:not(.active):hover { border-color: var(--accent-cyan, #028090); color: var(--accent-cyan, #028090); }
 
-.sliders-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.sliders-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .sl { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--slide-muted, #64748B); }
 .sl strong { color: var(--slide-fg, #1A2B3C); }
-.sl input[type=range] { width: 85px; accent-color: var(--accent-cyan, #028090); cursor: pointer; }
+.sl input[type=range] { width: 80px; accent-color: var(--accent-cyan, #028090); cursor: pointer; }
 
 .burst-btn {
   padding: 3px 11px;
@@ -597,10 +655,164 @@ onUnmounted(() => {
 }
 .burst-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ── Mode title ─────────────────────────────────────────────────────────────── */
-.sd-mtitle { font-size: 11px; font-weight: bold; color: var(--accent-cyan, #028090); letter-spacing: 0.02em; }
+/* ── Settings gear button ────────────────────────────────────────────────────── */
+.settings-wrap {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.settings-btn {
+  background: var(--slide-bg-card, white);
+  border: 1.5px solid var(--slide-border, #CBD5E1);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  color: var(--slide-muted, #64748B);
+  transition: border-color 0.18s, color 0.18s;
+}
+.settings-btn:hover,
+.settings-btn.active {
+  border-color: var(--accent-cyan, #028090);
+  color: var(--accent-cyan, #028090);
+}
 
-/* ── Canvas ─────────────────────────────────────────────────────────────────── */
+/* ── Settings panel ──────────────────────────────────────────────────────────── */
+.settings-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 5px);
+  z-index: 30;
+  background: var(--slide-bg-card, #ffffff);
+  border: 1px solid var(--slide-border, #E2E8F0);
+  border-radius: 8px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  min-width: 260px;
+  font-size: 10px;
+}
+.sp-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: bold;
+  color: var(--slide-fg, #1A2B3C);
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--slide-border, #E2E8F0);
+}
+.sp-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--slide-muted, #64748B);
+  padding: 0 2px;
+}
+.sp-close:hover { color: var(--accent-red, #E63946); }
+
+.sp-sep {
+  height: 1px;
+  background: var(--slide-border, #E2E8F0);
+  margin: 6px 0;
+}
+
+.sp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.sp-row:last-child { margin-bottom: 0; }
+
+.sp-label {
+  flex: 0 0 118px;
+  color: var(--slide-muted, #64748B);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+.sp-sub {
+  font-size: 8px;
+  opacity: 0.75;
+}
+.sp-slider {
+  flex: 1;
+  accent-color: var(--accent-cyan, #028090);
+  cursor: pointer;
+  height: 4px;
+}
+.sp-val {
+  flex: 0 0 68px;
+  text-align: right;
+  color: var(--slide-fg, #1A2B3C);
+  font-size: 9.5px;
+  font-weight: bold;
+}
+.sp-rand-label {
+  color: var(--accent-purple, #7B5EA7);
+  font-style: italic;
+}
+
+/* toggle switch */
+.sp-row-toggle { margin-bottom: 0; }
+.sp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.sp-toggle input { display: none; }
+.sp-toggle-track {
+  position: relative;
+  width: 28px; height: 14px;
+  border-radius: 7px;
+  background: var(--slide-border, #CBD5E1);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.sp-toggle-track.on {
+  background: var(--accent-cyan, #028090);
+}
+.sp-toggle-thumb {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.sp-toggle-track.on .sp-toggle-thumb {
+  left: 16px;
+}
+.sp-toggle-lbl {
+  font-size: 9.5px;
+  font-weight: bold;
+  color: var(--slide-fg, #1A2B3C);
+  min-width: 20px;
+}
+
+/* settings panel transition */
+.spanel-enter-active, .spanel-leave-active {
+  transition: opacity 0.15s, transform 0.15s;
+}
+.spanel-enter-from, .spanel-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+
+/* ── Mode title ──────────────────────────────────────────────────────────────── */
+.sd-mtitle {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent-cyan, #028090);
+  letter-spacing: 0.02em;
+}
+
+/* ── Canvas ──────────────────────────────────────────────────────────────────── */
 .sd-canvas {
   flex: 1;
   min-height: 0;
@@ -608,31 +820,30 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* ── Metrics ────────────────────────────────────────────────────────────────── */
+/* ── Metrics ─────────────────────────────────────────────────────────────────── */
 .sd-metrics { display: flex; gap: 5px; }
 .metric {
   flex: 1;
   background: var(--slide-bg-card, white);
   border: 1px solid var(--slide-border, #E2E8F0);
   border-radius: 6px;
-  padding: 4px 8px; text-align: center;
+  padding: 4px 8px;
+  text-align: center;
 }
 .m-label { font-size: 7.5px; color: var(--slide-muted, #94A3B8); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
 .m-val   { font-size: 14px; font-weight: bold; color: var(--slide-fg, #1A2B3C); transition: color 0.3s; line-height: 1.2; }
 .m-unit  { font-size: 8.5px; font-weight: normal; color: var(--slide-muted, #94A3B8); }
 .m-note  { font-size: 7px; color: var(--slide-muted, #94A3B8); font-style: italic; }
-.metric-lost { border-color: var(--accent-red, #E63946); background: color-mix(in srgb, var(--accent-red, #E63946) 8%, var(--slide-bg-card, white)); }
+.metric-lost {
+  border-color: var(--accent-red, #E63946);
+  background: color-mix(in srgb, var(--accent-red, #E63946) 8%, var(--slide-bg-card, white));
+}
 
-/* ── Overload glow ──────────────────────────────────────────────────────────── */
+/* ── Overload glow ───────────────────────────────────────────────────────────── */
 @keyframes overload-glow { 0%,100% { opacity:.10 } 50% { opacity:.22 } }
 .overload-glow { animation: overload-glow 0.75s ease-in-out infinite; }
 
-/* ── Kamera-Blitz ──────────────────────────────────────────────────────────── */
-.cam-flash {
-  opacity: 0;
-  pointer-events: none;
-}
-.cam-flash.firing {
-  opacity: 1;
-}
+/* ── Camera flash ────────────────────────────────────────────────────────────── */
+.cam-flash { opacity: 0; pointer-events: none; }
+.cam-flash.firing { opacity: 1; }
 </style>
