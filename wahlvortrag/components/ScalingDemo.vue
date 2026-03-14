@@ -37,6 +37,8 @@ const canvasOpacity = ref(1)
 const PROCESSING_TIME_MS = 200
 const FIRE_ANIM_MS       = 800
 const MAX_PACKETS        = 28
+const BURST_DURATION_MS  = 5000
+const BURST_RATE_FACTOR  = 3
 
 let packetId          = 0
 let workerId          = 1
@@ -182,7 +184,10 @@ const sBox = computed(() => {
 })
 
 // ── Metrics ───────────────────────────────────────────────────────────────────
-const incomingRate = computed(() => cameras.value * ratePerCamera.value)
+const incomingRate = computed(() => {
+  const mult = isBurst.value ? BURST_RATE_FACTOR : 1
+  return cameras.value * ratePerCamera.value * mult
+})
 
 const processingRate = computed(() => {
   if (mode.value <= 2) return baseRate.value * VRATE_MULT[verticalSize.value - 1]
@@ -191,7 +196,7 @@ const processingRate = computed(() => {
 })
 
 const throughput    = computed(() => Math.round(Math.min(processingRate.value, incomingRate.value)))
-const isOverloaded  = computed(() => mode.value === 1 && queueLength.value > 5)
+const isOverloaded  = computed(() => mode.value === 1 && incomingRate.value > processingRate.value)
 const costPerHour   = computed(() => {
   if (mode.value <= 2) return VCOSTS[verticalSize.value - 1]
   if (mode.value === 3) return manualWorkers.value * 0.5
@@ -223,7 +228,8 @@ const queueColor = computed(() =>
 
 // ── Camera fire delay (with randomizer) ───────────────────────────────────────
 function getFireDelay() {
-  const base = 1000 / Math.max(0.1, cameras.value * ratePerCamera.value)
+  const mult = isBurst.value ? BURST_RATE_FACTOR : 1
+  const base = 1000 / Math.max(0.1, cameras.value * ratePerCamera.value * mult)
   const r = randomizer.value
   if (r < 0.001) return base
   const noise = (Math.random() * 2 - 1) * r * 2
@@ -253,7 +259,8 @@ function fireOneCamera() {
     const wouldBe = queueLength.value + 1
     const newQueue = Math.min(20, wouldBe)
     const lost = wouldBe - newQueue
-    if (lost > 0) messagesLost.value = messagesLost.value + lost
+    const countAsLost = lost > 0 && (mode.value !== 1 || incomingRate.value > processingRate.value)
+    if (countAsLost) messagesLost.value = messagesLost.value + lost
     queueLength.value = newQueue
   } finally {
     if (!cameraFireStopped) {
@@ -355,11 +362,14 @@ function switchMode(m) {
 }
 
 function fireBurst() {
-  if (isBurst.value) return
+  if (isBurst.value) {
+    if (burstTimer) clearTimeout(burstTimer)
+    burstTimer = null
+    isBurst.value = false
+    return
+  }
   isBurst.value = true
-  const prev = cameras.value
-  cameras.value = 10
-  burstTimer = setTimeout(() => { cameras.value = prev; isBurst.value = false }, 5000)
+  burstTimer = setTimeout(() => { isBurst.value = false; burstTimer = null }, BURST_DURATION_MS)
 }
 
 onMounted(() => {
@@ -408,8 +418,8 @@ onUnmounted(() => {
           Workers <strong>{{ manualWorkers }}</strong>
           <input type="range" min="1" max="16" v-model.number="manualWorkers" />
         </label>
-        <button v-if="mode === 4" class="burst-btn" :disabled="isBurst" @click="fireBurst">
-          {{ isBurst ? '🔥 Bursting…' : '🔥 Fire burst!' }}
+        <button class="burst-btn" :class="{ 'burst-btn--active': isBurst }" @click="fireBurst">
+          {{ isBurst ? '🔥 Bursting… (Klick zum Beenden)' : '🔥 Fire burst' }}
         </button>
 
         <!-- Auto-Scaling menu (Mode 4 only) -->
@@ -807,12 +817,22 @@ onUnmounted(() => {
 
 .burst-btn {
   padding: 3px 11px;
-  border-radius: 6px; border: none;
-  background: var(--accent-red, #E63946); color: white;
+  border-radius: 6px;
+  border: 1px solid var(--slide-border, #E2E8F0);
+  background: var(--slide-bg-card, #fff);
+  color: var(--slide-muted, #64748B);
   font-family: inherit; font-size: 11px;
-  cursor: pointer; transition: opacity 0.2s;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.burst-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.burst-btn:hover { border-color: var(--accent-cyan, #028090); color: var(--accent-cyan, #028090); }
+.burst-btn--active {
+  border: none;
+  background: var(--accent-red, #E63946);
+  color: white;
+  font-weight: 600;
+}
+.burst-btn--active:hover { filter: brightness(1.1); }
 
 /* ── Settings gear button ────────────────────────────────────────────────────── */
 .settings-wrap {
