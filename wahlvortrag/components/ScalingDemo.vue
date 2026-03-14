@@ -134,12 +134,13 @@ const camArrowTargets = computed(() => {
   })
 })
 
-// ── Worker grid ───────────────────────────────────────────────────────────────
+// ── Worker grid (kompakte Pod-Höhe, damit bis zu 16 Pods passen) ──────────────
+const WRK_CAPACITY_X = 768  // Capacity-Label rechts der Pods (wie Requests links der Kameras)
 function workerGrid(count) {
-  const cols = 2, bW = 74, bH = 38, gX = 8, gY = 8
+  const cols = 2, bW = 72, bH = 24, gX = 6, gY = 4
   const rows = Math.ceil(count / cols)
   const totH = rows * bH + (rows - 1) * gY
-  const sy   = Math.max(16, Math.round((SVG_H - totH) / 2))
+  const sy   = Math.max(12, Math.round((SVG_H - totH) / 2))
   return Array.from({ length: count }, (_, i) => ({
     x: WRK_X + (i % cols) * (bW + gX),
     y: sy + Math.floor(i / cols) * (bH + gY),
@@ -269,7 +270,7 @@ function runKEDA() {
     !(w.status === 'stopping' && now - w.stoppedAt >= 400)
   )
   const nonStopping = autoWorkers.value.filter(w => w.status !== 'stopping').length
-  if (q > 3 && nonStopping < 8 && scaleUpCD <= 0) {
+  if (q > 3 && nonStopping < 16 && scaleUpCD <= 0) {
     autoWorkers.value.push({ id: ++workerId, status: 'starting', addedAt: now, load: 0 })
     scaleUpCD = 12
   }
@@ -357,7 +358,7 @@ onUnmounted(() => {
         </label>
         <label v-if="mode === 3" class="sl">
           Workers <strong>{{ manualWorkers }}</strong>
-          <input type="range" min="1" max="8" v-model.number="manualWorkers" />
+          <input type="range" min="1" max="16" v-model.number="manualWorkers" />
         </label>
         <button v-if="mode === 4" class="burst-btn" :disabled="isBurst" @click="fireBurst">
           {{ isBurst ? '🔥 Bursting…' : '🔥 Fire burst!' }}
@@ -472,6 +473,13 @@ onUnmounted(() => {
           <text x="22" y="144" text-anchor="middle" :fill="C.vMuted" style="font-size:8px">req/s</text>
         </g>
 
+        <!-- Right: Capacity (in allen Modi) -->
+        <g>
+          <text :x="WRK_CAPACITY_X" y="118" text-anchor="middle" :fill="C.muted" style="font-size:9px;font-weight:bold">Capacity</text>
+          <text :x="WRK_CAPACITY_X" y="132" text-anchor="middle" :fill="C.purple" style="font-size:11px;font-weight:bold">{{ processingRate.toFixed(1) }}</text>
+          <text :x="WRK_CAPACITY_X" y="144" text-anchor="middle" :fill="C.vMuted" style="font-size:8px">req/s</text>
+        </g>
+
         <!-- CAMERAS -->
         <g v-for="(cam, i) in camPositions" :key="`cam-${i}`">
           <text :x="cam.x + 14" :y="cam.y + 4" style="font-size:14px"
@@ -528,10 +536,6 @@ onUnmounted(() => {
 
         <!-- SERVER (Modes 1 & 2) -->
         <g v-if="mode <= 2">
-          <text :x="sBox.x + sBox.w/2" :y="sBox.y - 44" text-anchor="middle" :fill="C.muted"
-                style="font-size:8px">Capacity</text>
-          <text :x="sBox.x + sBox.w/2" :y="sBox.y - 30" text-anchor="middle" :fill="C.purple"
-                style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <rect v-if="isOverloaded"
                 :x="sBox.x - 5" :y="sBox.y - 5" :width="sBox.w + 10" :height="sBox.h + 10"
                 rx="11" :fill="C.red" class="overload-glow" />
@@ -554,14 +558,12 @@ onUnmounted(() => {
 
         <!-- WORKERS (Mode 3) -->
         <g v-if="mode === 3">
-          <text x="668" y="22" text-anchor="middle" :fill="C.muted" style="font-size:8px">Capacity</text>
-          <text x="668" y="36" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <g v-for="(wp, i) in mode3Positions" :key="`w3-${i}`">
             <rect :x="wp.x" :y="wp.y" :width="wp.w" :height="wp.h"
-                  rx="5" :fill="C.card" :stroke="C.purple" stroke-width="1.5" />
-            <text :x="wp.x + 12" :y="wp.y + 16" style="font-size:11px">⚙</text>
-            <text :x="wp.x + 27" :y="wp.y + 15" :fill="C.fg" font-weight="bold"
-                  style="font-size:9px">Pod {{ i + 1 }}</text>
+                  rx="4" :fill="C.card" :stroke="C.purple" stroke-width="1.5" />
+            <text :x="wp.x + 10" :y="wp.y + 8" style="font-size:10px">⚙</text>
+            <text :x="wp.x + 24" :y="wp.y + 17" :fill="C.fg" font-weight="bold"
+                  style="font-size:8px">Pod {{ i + 1 }}</text>
           </g>
         </g>
 
@@ -570,21 +572,19 @@ onUnmounted(() => {
           <rect x="634" y="10" width="52" height="18" rx="9" :fill="C.purple" />
           <text x="660" y="23" text-anchor="middle" fill="white" font-weight="bold"
                 style="font-size:9.5px">KEDA</text>
-          <text x="668" y="38" text-anchor="middle" :fill="C.muted" style="font-size:8px">Capacity</text>
-          <text x="668" y="52" text-anchor="middle" :fill="C.purple" style="font-size:10px;font-weight:bold">{{ processingRate.toFixed(1) }} req/s</text>
           <g v-for="(w, i) in autoWorkers" :key="w.id"
              :style="{ opacity: w.status === 'stopping' ? 0 : w.status === 'starting' ? 0.55 : 1,
                        transition: 'opacity 0.4s ease' }">
             <template v-if="mode4Positions[i]">
               <rect :x="mode4Positions[i].x" :y="mode4Positions[i].y"
                     :width="mode4Positions[i].w" :height="mode4Positions[i].h"
-                    rx="5" :fill="C.card"
+                    rx="4" :fill="C.card"
                     :stroke="w.status === 'starting' ? C.orange : C.purple"
                     stroke-width="1.5" />
-              <text :x="mode4Positions[i].x + 12" :y="mode4Positions[i].y + 16"
-                    style="font-size:11px">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
-              <text :x="mode4Positions[i].x + 27" :y="mode4Positions[i].y + 15"
-                    :fill="C.fg" font-weight="bold" style="font-size:9px">
+              <text :x="mode4Positions[i].x + 10" :y="mode4Positions[i].y + 8"
+                    style="font-size:10px">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
+              <text :x="mode4Positions[i].x + 24" :y="mode4Positions[i].y + 17"
+                    :fill="C.fg" font-weight="bold" style="font-size:8px">
                 {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
               </text>
             </template>
