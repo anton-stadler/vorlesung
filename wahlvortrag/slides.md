@@ -1,6 +1,6 @@
 ---
 theme: default
-title: "Message-Based Architecture as an Enabler for Horizontally Scalable Hybrid AI Systems"
+title: "Scalable Systems via Message-Based Architecture"
 highlighter: shiki
 lineNumbers: false
 colorSchema: auto
@@ -17,9 +17,8 @@ addons:
   <div class="cover-tag">Trial Lecture · TH Rosenheim · 20.03.2026</div>
 
   <h1 class="cover-title">
-    Message-Based Architecture<br>
-    <span class="accent-pink">as an Enabler for</span><br>
-    <span class="accent-cyan">Horizontally Scalable Hybrid AI Systems</span>
+    Scalable Systems<br>
+    <span class="accent-cyan">via Message-Based Architecture</span>
   </h1>
 
   <div class="cover-meta">
@@ -205,44 +204,39 @@ layout: two-cols-header-with-footer
 
 <!-- SLIDE 5 — AUTOSCALING -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Autoscaling: The Swarm Scales Automatically</div>
+<div class="slide-header"><span class="accent-pink">#</span> Scale smart, not hard.</div>
 
 ::left::
 
-<div class="col-title" style="color:var(--accent-orange,#fb923c);">⚙ Reactive Autoscaling</div>
-
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.3rem;">
-  <li>Queue depth rises → new worker pods start automatically</li>
-  <li>Queue empty → excess pods are terminated</li>
-  <li>No manual intervention required</li>
+<div class="examples-label accent-purple" style="font-size:0.78rem;">Requirements</div>
+<ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
+  <li><strong>Stateless</strong> — No shared state between pods.</li>
+  <li><strong>Decoupling</strong> — Broker decouples producers and consumers.</li>
+  <li><strong>Observability</strong> — Metrics available (queue, CPU, latency) and fast pod startup.</li>
 </ul>
-
-<div class="examples-label accent-purple" style="margin-top:0.6rem;">Prerequisite</div>
-<div class="example-item">
-  <span class="example-icon">🔗</span>
-  <div>
-    <div class="example-name">Stateless Worker</div>
-    <div class="example-desc muted">Each pod reads independently from the queue — no shared state</div>
-  </div>
-</div>
 
 ::right::
 
-<div class="col-title" style="color:var(--accent-cyan,#38bdf8);">☁ In the Cloud: KEDA / HPA</div>
-
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.3rem;">
-  <li><strong>KEDA</strong> — scales Kubernetes pods based on queue length (RabbitMQ, Kafka, …)</li>
-  <li><strong>HPA</strong> — Kubernetes Horizontal Pod Autoscaler on CPU/memory basis</li>
-  <li>Combination: queue metric + CPU → precise scaling</li>
-</ul>
-
-<div class="example-item" style="margin-top:0.6rem;">
-  <span class="example-icon">🏗</span>
-  <div>
-    <div class="example-name">Our system</div>
-    <div class="example-desc muted">1,000 camera alarms → queue fills up → 20 workers start in &lt; 30 s</div>
+<div class="examples-label accent-cyan" style="font-size:0.78rem;margin-bottom:0.35rem;">Autoscaling metrics</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 0.5rem;margin-bottom:0.35rem;">
+  <div class="metric-box" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:6px;padding:0.35rem 0.5rem;">
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.78rem;">Queue</div>
+    <div class="muted" style="font-size:0.7rem;">Scale by messages in queue (KEDA).</div>
+  </div>
+  <div class="metric-box" style="border:1px solid var(--accent-orange,#fb923c);border-radius:6px;padding:0.35rem 0.5rem;">
+    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.78rem;">Load / CPU</div>
+    <div class="muted" style="font-size:0.7rem;">Scale by worker utilization (HPA).</div>
+  </div>
+  <div class="metric-box" style="border:1px solid var(--accent-purple,#bd93f9);border-radius:6px;padding:0.35rem 0.5rem;">
+    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.78rem;">Latency</div>
+    <div class="muted" style="font-size:0.7rem;">Scale by queue wait time (SLA).</div>
+  </div>
+  <div class="metric-box" style="border:1px solid var(--accent-green,#16a34a);border-radius:6px;padding:0.35rem 0.5rem;">
+    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:0.78rem;">Hybrid</div>
+    <div class="muted" style="font-size:0.7rem;">Scale up when queue <strong>or</strong> latency exceeded; down when both relaxed.</div>
   </div>
 </div>
+<div class="muted" style="font-size:0.68rem;">… and many more options (custom metrics, Prometheus, etc.).</div>
 
 ::bottom::
 

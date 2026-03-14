@@ -27,6 +27,10 @@
         <text x="268" y="120" style="fill:#f87171;font-size:9px;font-family:monospace;" text-anchor="middle">Rocket</text>
         <text x="268" y="132" style="fill:#f87171;font-size:8px;font-family:monospace;" text-anchor="middle">costs grow super-linearly</text>
       </svg>
+      <div class="scale-badges scale-badges-vertical">
+        <span class="scale-badge scale-badge-up">Scale up</span>
+        <span class="scale-badge scale-badge-down">Scale down</span>
+      </div>
     </div>
 
     <!-- Horizontal scaling: drone swarm -->
@@ -100,7 +104,49 @@
         <!-- +∞ indicator -->
         <text x="170" y="122" style="fill:var(--accent-green,#4ade80);font-size:24px;font-weight:bold;" text-anchor="middle">+∞</text>
       </svg>
+      <div class="scale-badges scale-badges-horizontal">
+        <span class="scale-badge scale-badge-out">Scale out</span>
+        <span class="scale-badge scale-badge-in">Scale in</span>
+      </div>
     </div>
 
   </div>
 </template>
+
+<style scoped>
+.scale-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.scale-badge {
+  font-size: 0.7rem;
+  font-family: var(--slidev-theme-font-mono, ui-monospace, monospace);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.scale-badges-vertical .scale-badge-up {
+  background: rgba(251, 146, 60, 0.2);
+  color: var(--accent-orange, #fb923c);
+  border: 1px solid rgba(251, 146, 60, 0.5);
+}
+.scale-badges-vertical .scale-badge-down {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+.scale-badges-horizontal .scale-badge-out {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-cyan, #38bdf8);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+.scale-badges-horizontal .scale-badge-in {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+</style>
