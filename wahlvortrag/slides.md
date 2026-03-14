@@ -243,9 +243,79 @@ layout: two-cols-header-with-footer
 <div style="display:flex;align-items:center;gap:1.2rem;">
   <div class="problem-insight" style="margin:0;flex:1;">
     <span class="accent-comment">»</span>
-    The message broker is what makes autoscaling possible — it decouples
-    <span class="accent-orange">production</span> from <span class="accent-cyan">processing</span>
-    and delivers the scaling signal along with it.
+    The broker enables autoscaling — it decouples senders and workers.<br>
+    Metrics (queue, load, latency, …) tell when to scale.
     <span class="accent-comment">«</span>
   </div>
+</div>
+
+---
+layout: default-with-footer
+---
+
+<!-- SLIDE 6 — INDUSTRY STANDARDS -->
+
+<div class="slide-header"><span class="accent-cyan">#</span> Further thoughts &amp; industry standards.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-top:0.5rem;flex:1;">
+
+  <!-- Block 1: Kubernetes Ecosystem -->
+  <div class="metric-box" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:0.55rem 0.7rem;">
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.78rem;margin-bottom:0.3rem;">
+      ☸ Kubernetes Ecosystem
+    </div>
+    <ul style="margin:0;padding-left:1.1rem;font-size:0.7rem;line-height:1.75;">
+      <li><strong>KEDA</strong> — Event-driven Autoscaler (Queue, Kafka, HTTP triggers)</li>
+      <li><strong>HPA</strong> — Horizontal Pod Autoscaler (CPU, Memory, custom metrics)</li>
+      <li><strong>VPA</strong> — Vertical Pod Autoscaler (right-size resource requests)</li>
+      <li><strong>Cluster Autoscaler</strong> — adds/removes nodes on demand</li>
+    </ul>
+  </div>
+
+  <!-- Block 2: Observability Stack -->
+  <div class="metric-box" style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:0.55rem 0.7rem;">
+    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.78rem;margin-bottom:0.3rem;">
+      📈 Observability Stack
+    </div>
+    <ul style="margin:0;padding-left:1.1rem;font-size:0.7rem;line-height:1.75;">
+      <li><strong>Prometheus</strong> — metrics collection &amp; custom metrics API</li>
+      <li><strong>Grafana</strong> — dashboards &amp; visual alerting</li>
+      <li><strong>RED Method</strong> — Rate · Errors · Duration as scaling signals</li>
+      <li><strong>OpenTelemetry</strong> — vendor-neutral instrumentation standard</li>
+    </ul>
+  </div>
+
+  <!-- Block 3: Scale-to-Zero -->
+  <div class="metric-box" style="border:1px solid var(--accent-green,#16a34a);border-radius:8px;padding:0.55rem 0.7rem;">
+    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:0.78rem;margin-bottom:0.3rem;">
+      ⚡ Scale-to-Zero
+    </div>
+    <ul style="margin:0;padding-left:1.1rem;font-size:0.7rem;line-height:1.75;">
+      <li><strong>Knative / Cloud Run / Lambda</strong> — zero idle cost</li>
+      <li>No load → no instances → no cost</li>
+      <li>Tradeoff: cold start latency must fit SLA</li>
+      <li>Ideal for bursty, unpredictable workloads</li>
+    </ul>
+  </div>
+
+  <!-- Block 4: FinOps & Resilience -->
+  <div class="metric-box" style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:0.55rem 0.7rem;">
+    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.78rem;margin-bottom:0.3rem;">
+      💸 FinOps &amp; Resilience
+    </div>
+    <ul style="margin:0;padding-left:1.1rem;font-size:0.7rem;line-height:1.75;">
+      <li><strong>Spot / Preemptible Instances</strong> — up to 90% cheaper for scaled workers</li>
+      <li>Scale up aggressively, scale down conservatively (cooldown)</li>
+      <li><strong>Predictive Scaling</strong> — ML-based forecasting (AWS, GCP)</li>
+      <li><strong>Chaos Engineering</strong> — verify autoscaling holds under real load</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="problem-insight" style="margin-top:0.5rem;">
+  <span class="accent-comment">»</span>
+  The <span class="accent-cyan">CNCF landscape</span> defines the de-facto standard —
+  composable, observable, cost-aware autoscaling is the industry baseline.
+  <span class="accent-comment">«</span>
 </div>
