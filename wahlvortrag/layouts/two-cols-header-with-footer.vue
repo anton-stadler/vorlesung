@@ -1,5 +1,6 @@
 <script setup>
 import GlobalBottom from '../components/global-bottom.vue'
+import DemoLink from '../components/DemoLink.vue'
 
 const props = defineProps({
   class: {
@@ -28,6 +29,9 @@ const props = defineProps({
       </div>
     </div>
     <GlobalBottom />
+    <div class="demo-link-wrap">
+      <DemoLink />
+    </div>
   </div>
 </template>
 
@@ -62,5 +66,18 @@ const props = defineProps({
 .col-bottom {
   align-self: end;
   grid-area: 3 / 1 / 3 / 3;
+}
+
+/* „Demo“ am rechten Rand, 90° gedreht, stört den Inhalt nicht */
+.demo-link-wrap {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center center;
+  z-index: 10;
+}
+.demo-link-wrap :deep(.demo-link-btn) {
+  white-space: nowrap;
 }
 </style>

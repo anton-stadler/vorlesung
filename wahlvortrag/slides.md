@@ -9,10 +9,41 @@ fonts:
 addons:
   - prime
   - slidev-addon-rosenheim-shared
+
+---
+
+<!-- SLIDE 1 — COVER -->
+<div class="cover-wrap">
+  <div class="cover-tag">Probelehrveranstaltung · TH Rosenheim · 20.03.2026</div>
+
+  <h1 class="cover-title">
+    Message-Based Architecture<br>
+    <span class="accent-pink">as an Enabler for</span><br>
+    <span class="accent-cyan">Horizontally Scalable Hybrid AI Systems</span>
+  </h1>
+
+  <div class="cover-meta">
+    <div class="cover-author">Dr.-Ing. Anton Stadler</div>
+    <div class="cover-org muted">Keenfinity GmbH · Bosch spin-off</div>
+  </div>
+
+  <div class="cover-footer">
+    <span class="badge badge-purple">Master Informatik</span>
+    <span class="badge badge-cyan">Applied AI</span>
+    <span class="badge badge-blue">Distributed Systems</span>
+    <span class="badge badge-pink">Cloud Computing</span>
+  </div>
+
+  <div class="cover-institution muted">
+    Technische Hochschule Rosenheim · Fakultät für Informatik
+  </div>
+</div>
+
+---
 layout: two-cols-header-with-footer
 ---
 
-<!-- SLIDE 1 — OPENER: HYBRID FIRE DETECTION -->
+<!-- SLIDE 2 — OPENER: HYBRID FIRE DETECTION -->
 
 <div class="slide-header"><span class="accent-pink">#</span> Eine Kamera erkennt einen Brand — was passiert als nächstes?</div>
 
@@ -58,6 +89,7 @@ layout: two-cols-header-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: demo
 ---
 
 <!-- SLIDE 2 — LIVE DEMO -->
@@ -110,11 +142,6 @@ layout: two-cols-header-with-footer
     der horizontales Scaling erst <span class="accent-green">möglich macht.</span>
     <span class="accent-comment">«</span>
   </div>
-  <button
-    @click="$slidev.nav.go(1)"
-    style="flex-shrink:0;padding:0.5rem 1.4rem;background:var(--accent-pink,#f472b6);color:white;border:none;border-radius:6px;font-family:monospace;font-size:0.9rem;cursor:pointer;font-weight:bold;letter-spacing:0.02em;">
-    → Zur Demo
-  </button>
 </div>
 
 ---
@@ -151,14 +178,73 @@ layout: two-cols-header-with-footer
   <DroneScalingSvg />
 </div>
 
-<div class="problem-insight">
-  <span class="accent-comment">»</span>
-  <strong>Software-Analogie:</strong>
-  Drohne = Worker-Pod · Rakete = Hochleistungsserver.
-  Der Schwarm skaliert <span class="accent-cyan">horizontal</span> —
-  und funktioniert nur mit <span class="accent-orange">Entkopplung über einen Message Broker.</span>
-  <span class="muted" style="font-size:0.68rem;display:block;margin-top:0.25rem;">
-    ℹ Historischer Kontext: Drohnenschwarm-Angriffe wurden u. a. im Ukraine-Krieg ab 2022 dokumentiert und gelten als Paradebeispiel für dezentrale Systemarchitektur.
-  </span>
-  <span class="accent-comment">«</span>
+<div style="display:flex;align-items:flex-end;gap:1.2rem;">
+  <div class="problem-insight" style="margin:0;flex:1;">
+    <span class="accent-comment">»</span>
+    <strong>Software-Analogie:</strong>
+    Drohne = Worker-Pod · Rakete = Hochleistungsserver.
+    Der Schwarm skaliert <span class="accent-cyan">horizontal</span> —
+    und funktioniert nur mit <span class="accent-orange">Entkopplung über einen Message Broker.</span>
+    <span class="muted" style="font-size:0.68rem;display:block;margin-top:0.25rem;">
+      ℹ Historischer Kontext: Drohnenschwarm-Angriffe wurden u. a. im Ukraine-Krieg ab 2022 dokumentiert und gelten als Paradebeispiel für dezentrale Systemarchitektur.
+    </span>
+    <span class="accent-comment">«</span>
+  </div>
+</div>
+
+---
+layout: two-cols-header-with-footer
+---
+
+<!-- SLIDE 5 — AUTOSCALING -->
+
+<div class="slide-header"><span class="accent-pink">#</span> Autoscaling: Der Schwarm wächst von selbst</div>
+
+::left::
+
+<div class="col-title" style="color:var(--accent-orange,#fb923c);">⚙ Reaktives Autoscaling</div>
+
+<ul class="check-list" style="font-size:0.78rem;margin-top:0.3rem;">
+  <li>Queue-Tiefe steigt → neue Worker-Pods starten automatisch</li>
+  <li>Queue leer → überschüssige Pods werden beendet</li>
+  <li>Kein manueller Eingriff nötig</li>
+</ul>
+
+<div class="examples-label accent-purple" style="margin-top:0.6rem;">Voraussetzung</div>
+<div class="example-item">
+  <span class="example-icon">🔗</span>
+  <div>
+    <div class="example-name">Stateless Worker</div>
+    <div class="example-desc muted">Jeder Pod liest unabhängig aus der Queue — kein geteilter Zustand</div>
+  </div>
+</div>
+
+::right::
+
+<div class="col-title" style="color:var(--accent-cyan,#38bdf8);">☁ In der Cloud: KEDA / HPA</div>
+
+<ul class="check-list" style="font-size:0.78rem;margin-top:0.3rem;">
+  <li><strong>KEDA</strong> — skaliert Kubernetes-Pods anhand der Queue-Länge (RabbitMQ, Kafka, …)</li>
+  <li><strong>HPA</strong> — Kubernetes Horizontal Pod Autoscaler auf CPU/Memory-Basis</li>
+  <li>Kombination: Queue-Metrik + CPU → präzise Skalierung</li>
+</ul>
+
+<div class="example-item" style="margin-top:0.6rem;">
+  <span class="example-icon">🏗</span>
+  <div>
+    <div class="example-name">Unser System</div>
+    <div class="example-desc muted">1 000 Kamera-Alarme → Queue füllt sich → 20 Worker starten in &lt; 30 s</div>
+  </div>
+</div>
+
+::bottom::
+
+<div style="display:flex;align-items:center;gap:1.2rem;">
+  <div class="problem-insight" style="margin:0;flex:1;">
+    <span class="accent-comment">»</span>
+    Der Message Broker macht Autoscaling erst möglich — er entkoppelt
+    <span class="accent-orange">Produktion</span> von <span class="accent-cyan">Verarbeitung</span>
+    und liefert das Skalierungssignal gleich mit.
+    <span class="accent-comment">«</span>
+  </div>
 </div>
