@@ -9,6 +9,10 @@ const props = defineProps({
   layoutClass: {
     type: String,
   },
+  showDemo: {
+    type: Boolean,
+    default: true,
+  },
 })
 </script>
 
@@ -29,7 +33,7 @@ const props = defineProps({
       </div>
     </div>
     <GlobalBottom />
-    <div class="demo-link-wrap">
+    <div v-if="props.showDemo" class="demo-link-wrap">
       <DemoLink />
     </div>
   </div>

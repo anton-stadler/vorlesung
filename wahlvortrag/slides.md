@@ -41,37 +41,46 @@ addons:
 
 ---
 layout: two-cols-header-with-footer
+showDemo: false
 ---
 
 <!-- SLIDE 2 — OPENER: HYBRID FIRE DETECTION -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Eine Kamera erkennt einen Brand — was passiert als nächstes?</div>
+<div class="slide-header"><span class="accent-pink">#</span> Edge meets Cloud: Hybride Branddetektion</div>
 
 ::left::
 
-<div style="display:flex;justify-content:center;align-items:center;height:100%;">
+<div style="display:flex;justify-content:center;align-items:flex-start;height:100%;padding-top:0.5rem;">
   <FireDetectionSvg />
 </div>
 
 ::right::
 
 <div class="scenario-label">
-  <span class="accent-comment">// System:</span>
+  <span class="accent-comment">// Strategie:</span>
   <span class="accent-cyan"> Hybrid Edge–Cloud AI</span>
 </div>
 <div class="example-item" style="margin-top:0.9rem;">
-  <span class="example-icon" style="background:var(--accent-cyan,#38bdf8);color:white;padding:0.15rem 0.4rem;border-radius:4px;font-style:normal;font-size:0.65rem;min-width:auto;">EDGE</span>
-  <div>
-    <div class="example-name">Kamera + CNN erkennt Brand lokal</div>
-    <div class="example-desc muted">Nur Alarm-Event wird gesendet — kein Video-Stream</div>
+  <span class="example-icon badge-role badge-role-edge">Edge</span>
+  <div style="text-align:left;">
+    <div class="example-name">Kleines CNN-Modell auf der Kamera</div>
+    <div class="example-desc muted">Echtzeit-Inferenz &lt; 50 ms · erkennt „Feuer möglich"</div>
+    <div class="example-desc muted">Nur ein kompaktes Bild wird gesendet — kein Stream</div>
   </div>
 </div>
-<div class="example-item">
-  <span class="example-icon" style="background:var(--accent-purple,#a78bfa);color:white;padding:0.15rem 0.4rem;border-radius:4px;font-style:normal;font-size:0.65rem;min-width:auto;">CLOUD</span>
-  <div>
-    <div class="example-name">Verification Model prüft den Alarm</div>
-    <div class="example-desc muted">Passt Erkennungsschwelle θ adaptiv an</div>
+<div class="example-item" style="margin-top:0.5rem;">
+  <span class="example-icon badge-role badge-role-cloud">Cloud</span>
+  <div style="text-align:left;">
+    <div class="example-name">High-End-Modell in der Cloud</div>
+    <div class="example-desc muted">Latenz &lt; 2 s erlaubt · geringere Fehlalarm-Rate</div>
+    <div class="example-desc muted">Gibt einen Confidence-Score zurück</div>
   </div>
+</div>
+<div class="problem-insight" style="margin-top:0.8rem;font-size:0.78rem;">
+  <span class="accent-comment">»</span>
+  Warum hybrid? Echtzeit braucht ein <span class="accent-cyan">kleines Modell lokal</span> —
+  Präzision braucht ein <span class="accent-purple">großes Modell in der Cloud.</span>
+  <span class="accent-comment">«</span>
 </div>
 
 ::bottom::
@@ -81,11 +90,6 @@ layout: two-cols-header-with-footer
   Was passiert, wenn <span class="accent-orange">1 000 Kameras</span> gleichzeitig einen Alarm senden?
   <span class="accent-comment">«</span>
 </div>
-<ul class="cross-list" style="margin-top:0.5rem;font-size:0.8rem;">
-  <li>Wer nimmt Anfragen an, wenn der Worker abstürzt?</li>
-  <li>Wie fügt man weitere Worker hinzu — ohne jede Kamera umzukonfigurieren?</li>
-  <li>Wie verhindert man, dass Alarme verloren gehen?</li>
-</ul>
 
 ---
 layout: default-with-footer

@@ -476,7 +476,7 @@ onUnmounted(() => {
           <input type="range" min="1" max="16" v-model.number="manualWorkers" />
         </label>
         <button class="burst-btn" :class="{ 'burst-btn--active': isBurst }" @click="fireBurst">
-          {{ isBurst ? '🔥 Bursting… (Klick zum Beenden)' : '🔥 Fire burst' }}
+          {{ isBurst ? '🔥 Bursting…' : '🔥 Fire burst' }}
         </button>
 
         <!-- Auto-Scaling menu (Mode 4 only) -->
