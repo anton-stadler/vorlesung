@@ -138,7 +138,7 @@ const camArrowTargets = computed(() => {
 const WRK_CAPACITY_X = 768  // Capacity-Label rechts der Pods (wie Requests links der Kameras)
 // Pod-Inhalt linksbündig mit Abstand, damit „Pod 16“ / „starting…“ nicht abgeschnitten wird
 const POD_LEFT_PAD = 10
-const POD_ICON_W = 12
+const POD_ICON_W = 4
 const POD_GAP = 5
 function workerGrid(count) {
   const cols = 2, bW = 80, bH = 26, gX = 6, gY = 4
@@ -589,7 +589,7 @@ onUnmounted(() => {
                 <text x="0" y="0" text-anchor="middle" dominant-baseline="middle"
                       class="pod-icon">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
                 <text :x="POD_ICON_W + POD_GAP" y="0" text-anchor="start" dominant-baseline="middle"
-                      :fill="C.fg" class="pod-label">
+                      :fill="C.fg" :class="['pod-label', w.status === 'starting' && 'pod-label--starting']">
                   {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
                 </text>
               </g>
@@ -640,6 +640,7 @@ onUnmounted(() => {
 .sd-canvas :deep(svg) { font-size: 1px !important; }
 .sd-canvas :deep(.pod-icon) { font-size: 16px !important; }
 .sd-canvas :deep(.pod-label) { font-size: 14px !important; font-weight: bold; }
+.sd-canvas :deep(.pod-label--starting) { font-size: 10px !important; }
 
 /* ── Container ───────────────────────────────────────────────────────────────── */
 .sd {
