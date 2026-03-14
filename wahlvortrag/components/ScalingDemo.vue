@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 
 // ── Layout constants (SVG coordinate space 800 × 250) ─────────────────────────
 const SVG_W = 800
@@ -33,8 +33,11 @@ const packets       = ref([])
 const cameraFiring  = reactive({})
 const isBurst       = ref(false)
 const canvasOpacity = ref(1)
+const isRestarting  = ref(false)
+const restartProgress = ref(0)
 
 const PROCESSING_TIME_MS = 200
+const DOWNTIME_MS       = 3000
 const FIRE_ANIM_MS       = 800
 const MAX_PACKETS        = 28
 const BURST_DURATION_MS  = 5000
@@ -48,6 +51,8 @@ let burstTimer        = null
 let scaleUpCD         = 0
 let scaleDownCD       = 0
 let cameraFireStopped = false
+let restartIntervalId = null
+let restartTimeoutId  = null
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 const settingsOpen   = ref(false)
@@ -192,6 +197,7 @@ const incomingRate = computed(() => {
 })
 
 const processingRate = computed(() => {
+  if (mode.value <= 2 && isRestarting.value) return 0
   if (mode.value <= 2) return baseRate.value * VRATE_MULT[verticalSize.value - 1]
   if (mode.value === 3) return manualWorkers.value * baseRate.value
   return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * baseRate.value
@@ -374,6 +380,36 @@ function fireBurst() {
   burstTimer = setTimeout(() => { isBurst.value = false; burstTimer = null }, BURST_DURATION_MS)
 }
 
+// ── Downtime bei vertikaler Skalierung (Modus 1 & 2) ─────────────────────────────
+watch(verticalSize, (newVal, oldVal) => {
+  if (mode.value > 2) return
+  if (oldVal === undefined) return // initial mount, skip
+  if (restartIntervalId) clearInterval(restartIntervalId)
+  if (restartTimeoutId) clearTimeout(restartTimeoutId)
+  isRestarting.value = true
+  restartProgress.value = 0
+  const stepMs = 100
+  const steps = DOWNTIME_MS / stepMs
+  let step = 0
+  restartIntervalId = setInterval(() => {
+    step += 1
+    restartProgress.value = Math.min(1, step / steps)
+    if (step >= steps) {
+      clearInterval(restartIntervalId)
+      restartIntervalId = null
+      isRestarting.value = false
+      restartProgress.value = 0
+    }
+  }, stepMs)
+  restartTimeoutId = setTimeout(() => {
+    if (restartIntervalId) clearInterval(restartIntervalId)
+    restartIntervalId = null
+    restartTimeoutId = null
+    isRestarting.value = false
+    restartProgress.value = 0
+  }, DOWNTIME_MS)
+})
+
 onMounted(() => {
   isDark.value = document.documentElement.classList.contains('dark')
   darkObserver = new MutationObserver(() => {
@@ -392,6 +428,8 @@ onUnmounted(() => {
   clearInterval(intervalId)
   if (cameraFireTimeout) clearTimeout(cameraFireTimeout)
   if (burstTimer)        clearTimeout(burstTimer)
+  if (restartIntervalId) clearInterval(restartIntervalId)
+  if (restartTimeoutId)  clearTimeout(restartTimeoutId)
 })
 </script>
 
@@ -693,22 +731,35 @@ onUnmounted(() => {
         </g>
 
         <!-- SERVER (Modes 1 & 2) -->
-        <g v-if="mode <= 2">
-          <rect v-if="isOverloaded"
+        <g v-if="mode <= 2" :style="{ opacity: isRestarting ? 0.7 : 1, transition: 'opacity 0.3s' }">
+          <rect v-if="isRestarting"
+                :x="sBox.x - 5" :y="sBox.y - 5" :width="sBox.w + 10" :height="sBox.h + 10"
+                rx="11" :fill="C.orange" class="restarting-glow" />
+          <rect v-if="isOverloaded && !isRestarting"
                 :x="sBox.x - 5" :y="sBox.y - 5" :width="sBox.w + 10" :height="sBox.h + 10"
                 rx="11" :fill="C.red" class="overload-glow" />
           <rect :x="sBox.x" :y="sBox.y" :width="sBox.w" :height="sBox.h"
                 rx="7" :fill="C.card"
-                :stroke="isOverloaded ? C.red : C.border"
-                :stroke-width="isOverloaded ? 2.5 : 1.5" />
-          <g v-if="isOverloaded">
+                :stroke="isRestarting ? C.orange : isOverloaded ? C.red : C.border"
+                :stroke-width="isRestarting || isOverloaded ? 2.5 : 1.5" />
+          <g v-if="isRestarting">
+            <rect :x="sBox.x + sBox.w/2 - 42" :y="sBox.y - 19" width="84" height="16" rx="8" :fill="C.orange" />
+            <text :x="sBox.x + sBox.w/2" :y="sBox.y - 7"
+                  text-anchor="middle" fill="white" font-weight="bold"
+                  style="font-size:8px">⏳ RESTARTING…</text>
+          </g>
+          <g v-else-if="isOverloaded">
             <rect :x="sBox.x + sBox.w/2 - 33" :y="sBox.y - 19" width="66" height="16" rx="8" :fill="C.red" />
             <text :x="sBox.x + sBox.w/2" :y="sBox.y - 7"
                   text-anchor="middle" fill="white" font-weight="bold"
                   style="font-size:8px">OVERLOADED</text>
           </g>
+          <template v-if="isRestarting">
+            <rect :x="sBox.x + 7" :y="sBox.y + sBox.h - 14" :width="sBox.w - 14" height="6" rx="3" :fill="C.barBg" />
+            <rect :x="sBox.x + 7" :y="sBox.y + sBox.h - 14" :width="Math.max(0, (sBox.w - 14) * restartProgress)" height="6" rx="3" :fill="C.orange" />
+          </template>
           <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 - 8"
-                text-anchor="middle" style="font-size:18px">🖥</text>
+                text-anchor="middle" style="font-size:18px">{{ isRestarting ? '⏳' : '🖥' }}</text>
           <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 + 14"
                 text-anchor="middle" :fill="C.fg" font-weight="bold"
                 style="font-size:11px">{{ VLABELS[verticalSize - 1] }}</text>
@@ -898,7 +949,7 @@ onUnmounted(() => {
 .sliders-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .sl { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--slide-muted, #64748B); }
 .sl strong { color: var(--slide-fg, #1A2B3C); }
-.sl .sl-fixed { display: inline-block; width: 44px; text-align: left; }
+.sl .sl-fixed { display: inline-block; min-width: 52px; text-align: left; white-space: nowrap; }
 .sl input[type=range] { width: 80px; accent-color: var(--accent-cyan, #028090); cursor: pointer; }
 
 .burst-btn {
@@ -1155,6 +1206,9 @@ onUnmounted(() => {
 /* ── Overload glow ───────────────────────────────────────────────────────────── */
 @keyframes overload-glow { 0%,100% { opacity:.10 } 50% { opacity:.22 } }
 .overload-glow { animation: overload-glow 0.75s ease-in-out infinite; }
+
+@keyframes restart-glow { 0%,100% { opacity:.12 } 50% { opacity:.25 } }
+.restarting-glow { animation: restart-glow 0.75s ease-in-out infinite; }
 
 /* ── Camera flash ────────────────────────────────────────────────────────────── */
 .cam-flash { opacity: 0; pointer-events: none; }
