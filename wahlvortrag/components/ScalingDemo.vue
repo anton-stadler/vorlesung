@@ -106,13 +106,32 @@ const C = computed(() => isDark.value ? {
   flashLine: '#028090',   // teal for line flash
 })
 
-// ── Camera positions ──────────────────────────────────────────────────────────
+// ── Camera positions: immer in SVG-Höhe einpassen (auch bei 10 Kameras) ───────
 const camPositions = computed(() => {
-  const n     = cameras.value
-  const step  = Math.max(40, (SVG_H - 50) / Math.max(n, 1))
-  const total = (n - 1) * step
-  const sy    = (SVG_H - total) / 2
-  return Array.from({ length: n }, (_, i) => ({ x: 76, y: Math.round(sy + i * step) }))
+  const n      = cameras.value
+  const margin = 24
+  const range  = SVG_H - 2 * margin
+  const step   = n <= 1 ? 0 : range / (n - 1)
+  return Array.from({ length: n }, (_, i) => ({
+    x: 76,
+    y: Math.round(margin + (n <= 1 ? range / 2 : i * step))
+  }))
+})
+
+// ── Ankerpunkte auf der linken Kante des Broker/Server (25 %–75 % der Höhe) ───
+const camArrowTargets = computed(() => {
+  const n = cameras.value
+  let targetX, topY, boxH
+  if (mode.value === 1) {
+    const s = sBox.value
+    targetX = s.x; topY = s.y; boxH = s.h
+  } else {
+    targetX = BRX; topY = BRY; boxH = BRH
+  }
+  return Array.from({ length: n }, (_, i) => {
+    const t = n <= 1 ? 0.5 : 0.25 + (i / (n - 1)) * 0.5
+    return { x: targetX, y: Math.round(topY + boxH * t) }
+  })
 })
 
 // ── Worker grid ───────────────────────────────────────────────────────────────
@@ -409,14 +428,21 @@ onUnmounted(() => {
         <!-- Background -->
         <rect width="800" height="250" rx="6" :fill="C.bg" />
 
-        <!-- Connector lines: cameras → target (flash solid when camera fires) -->
+        <!-- Pfeilspitzen-Marker -->
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0.5 L0,6.5 L6.5,3.5 z" :fill="C.vMuted" />
+          </marker>
+        </defs>
+
+        <!-- Connector lines: cameras → Broker/Server, verteilt 25 %–75 %, Pfeilspitze, aktiv = durchgezogen -->
         <line v-for="(cam, i) in camPositions" :key="`cl-${i}`"
-          :x1="cam.x + 19" :y1="cam.y"
-          :x2="mode === 1 ? sBox.x : BRX"
-          :y2="mode === 1 ? sBox.y + sBox.h / 2 : BRY + BRH / 2"
+          :x1="cam.x + 5" :y1="cam.y"
+          :x2="camArrowTargets[i].x" :y2="camArrowTargets[i].y"
           :stroke="showAnimations && cameraFiring[i] ? C.flashLine : C.connector"
-          :stroke-width="showAnimations && cameraFiring[i] ? 2 : 1"
-          :stroke-dasharray="showAnimations && cameraFiring[i] ? '' : '4 3'" />
+          stroke-width="1"
+          :stroke-dasharray="showAnimations && cameraFiring[i] ? 'none' : '4 3'"
+          marker-end="url(#arr)" />
 
         <!-- Connector: broker → server (Mode 2) — always dashed -->
         <line v-if="mode === 2"
