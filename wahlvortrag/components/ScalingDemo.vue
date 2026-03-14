@@ -15,10 +15,10 @@ const VLABELS    = ['small', 'medium', 'large', 'x-large']
 const VCOSTS     = [1.00, 2.00, 4.00, 8.00]
 const VRATE_MULT = [1, 2, 4, 8]   // multipliers relative to baseRate
 const MTITLES    = [
-  'Direct Connection — No Broker',
-  'Broker + Vertical Scaling',
+  'Direct Connection – Single Machine',
+  'Broker + Single Machine',
   'Broker + Horizontal Scaling (Manual)',
-  'Auto-Scale (KEDA)',
+  'Broker + Horizontal Scaling (Auto)',
 ]
 
 // ── Core state ────────────────────────────────────────────────────────────────
@@ -60,6 +60,7 @@ const startupTimeMs  = ref(1000)  // Pod startup delay (ms) until status 'active
 // ── Auto-Scaling (Mode 4) ──────────────────────────────────────────────────────
 const autoScaleStrategy  = ref('queue')   // 'queue' | 'load' | 'latency' | 'hybrid'
 const autoScaleMenuOpen   = ref(false)
+const modeMenuOpen        = ref(false)
 const queueScaleUp        = ref(3)
 const queueScaleDown      = ref(1)
 const loadTargetPct       = ref(70)
@@ -395,15 +396,32 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="sd">
+  <div class="sd" :class="{ 'sd--dark': isDark }">
 
     <!-- Controls -->
     <div class="sd-ctrl">
-      <div class="mode-pills">
-        <button v-for="m in [1,2,3,4]" :key="m"
-          class="mpill" :class="{ active: mode === m }" @click="switchMode(m)">
-          Mode {{ m }}
+      <div class="mode-dropdown-wrap">
+        <button
+          type="button"
+          class="mode-dropdown-btn"
+          :class="{ active: modeMenuOpen }"
+          @click="modeMenuOpen = !modeMenuOpen"
+          :title="MTITLES[mode - 1]">
+          {{ MTITLES[mode - 1] }}
         </button>
+        <Transition name="spanel">
+          <div v-if="modeMenuOpen" class="mode-dropdown-panel">
+            <button
+              v-for="(title, i) in MTITLES"
+              :key="i"
+              type="button"
+              class="mode-option"
+              :class="{ active: mode === i + 1 }"
+              @click="switchMode(i + 1); modeMenuOpen = false">
+              {{ title }}
+            </button>
+          </div>
+        </Transition>
       </div>
 
       <div class="sliders-row">
@@ -412,7 +430,7 @@ onUnmounted(() => {
           <input type="range" min="1" max="10" v-model.number="cameras" />
         </label>
         <label v-if="mode <= 2" class="sl">
-          Server <strong>{{ VLABELS[verticalSize - 1] }}</strong>
+          Server <strong class="sl-fixed">{{ VLABELS[verticalSize - 1] }}</strong>
           <input type="range" min="1" max="4" v-model.number="verticalSize" />
         </label>
         <label v-if="mode === 3" class="sl">
@@ -563,9 +581,6 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Mode title -->
-    <div class="sd-mtitle">{{ MTITLES[mode - 1] }}</div>
-
     <!-- SVG Canvas -->
     <div class="sd-canvas" :style="{ opacity: canvasOpacity, transition: 'opacity 0.2s' }">
       <svg :width="SVG_W" :height="SVG_H" :viewBox="`0 0 ${SVG_W} ${SVG_H}`"
@@ -573,7 +588,7 @@ onUnmounted(() => {
            style="width:100%;display:block;font-family:'JetBrains Mono',monospace;">
 
         <!-- Background -->
-        <rect width="800" height="250" rx="6" :fill="C.bg" />
+        <rect class="sd-canvas-bg" width="800" height="250" rx="6" />
 
         <!-- Pfeilspitzen-Marker -->
         <defs>
@@ -799,28 +814,91 @@ onUnmounted(() => {
 /* ── Controls row ────────────────────────────────────────────────────────────── */
 .sd-ctrl {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
 }
-.mode-pills { display: flex; gap: 3px; }
-.mpill {
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1.5px solid var(--slide-border, #CBD5E1);
+/* ── Mode dropdown (design-integrated, like Auto-Scale panel) ───────────────── */
+.mode-dropdown-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.mode-dropdown-btn {
   background: var(--slide-bg-card, white);
+  border: 1.5px solid var(--slide-border, #CBD5E1);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--slide-fg, #1A2B3C);
+  transition: border-color 0.18s, color 0.18s;
+  width: 265px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mode-dropdown-btn:hover,
+.mode-dropdown-btn.active {
+  border-color: var(--accent-cyan, #028090);
+  color: var(--accent-cyan, #028090);
+}
+.mode-dropdown-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 5px);
+  z-index: 30;
+  background: var(--slide-bg-card, #ffffff);
+  border: 1px solid var(--slide-border, #E2E8F0);
+  border-radius: 8px;
+  padding: 6px 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  min-width: 260px;
+  font-size: 10px;
+}
+.mode-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: var(--slide-fg, #1A2B3C);
   font-family: inherit;
   font-size: 11px;
+  text-align: left;
   cursor: pointer;
-  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  transition: background 0.15s, color 0.15s;
 }
-.mpill.active         { background: var(--accent-cyan, #028090); color: white; border-color: var(--accent-cyan, #028090); }
-.mpill:not(.active):hover { border-color: var(--accent-cyan, #028090); color: var(--accent-cyan, #028090); }
+.mode-option:hover {
+  background: var(--slide-border, #E2E8F0);
+  color: var(--slide-fg, #1A2B3C);
+}
+.mode-option.active {
+  background: var(--accent-cyan, #028090);
+  color: white;
+}
+.mode-option.active:hover {
+  background: var(--accent-cyan, #028090);
+  color: white;
+}
+/* Dark mode: cyan on white is hard to read → dark background + cyan text */
+.sd--dark .mode-option.active {
+  background: var(--slide-bg-card, #383A4A);
+  color: var(--accent-cyan, #8BE9FD);
+  border-left: 3px solid var(--accent-cyan, #8BE9FD);
+  padding-left: 9px; /* 12px - 3px border so text aligns with others */
+}
+.sd--dark .mode-option.active:hover {
+  background: var(--slide-bg-card, #383A4A);
+  color: var(--accent-cyan, #8BE9FD);
+}
 
 .sliders-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .sl { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--slide-muted, #64748B); }
 .sl strong { color: var(--slide-fg, #1A2B3C); }
+.sl .sl-fixed { display: inline-block; width: 44px; text-align: left; }
 .sl input[type=range] { width: 80px; accent-color: var(--accent-cyan, #028090); cursor: pointer; }
 
 .burst-btn {
@@ -1043,20 +1121,16 @@ onUnmounted(() => {
   transform: translateY(-6px) scale(0.97);
 }
 
-/* ── Mode title ──────────────────────────────────────────────────────────────── */
-.sd-mtitle {
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--accent-cyan, #028090);
-  letter-spacing: 0.02em;
-}
-
 /* ── Canvas ──────────────────────────────────────────────────────────────────── */
 .sd-canvas {
   flex: 1;
   min-height: 0;
   border-radius: 5px;
   overflow: hidden;
+  background: var(--slide-bg, #F8FAFC);
+}
+.sd-canvas :deep(svg rect.sd-canvas-bg) {
+  fill: var(--slide-bg, #F8FAFC);
 }
 
 /* ── Metrics ─────────────────────────────────────────────────────────────────── */
