@@ -8,7 +8,7 @@ const BRX = 305
 const BRW = 155
 const BRY = 55
 const BRH = 138
-const WRK_X = 590
+const WRK_X = 548  // links genug, damit Pods die Capacity (rechts bei 768) nicht überlagern
 
 // ── Labels ────────────────────────────────────────────────────────────────────
 const VLABELS    = ['small', 'medium', 'large', 'x-large']
@@ -136,8 +136,12 @@ const camArrowTargets = computed(() => {
 
 // ── Worker grid (kompakte Pod-Höhe, damit bis zu 16 Pods passen) ──────────────
 const WRK_CAPACITY_X = 768  // Capacity-Label rechts der Pods (wie Requests links der Kameras)
+// Pod-Inhalt linksbündig mit Abstand, damit „Pod 16“ / „starting…“ nicht abgeschnitten wird
+const POD_LEFT_PAD = 10
+const POD_ICON_W = 12
+const POD_GAP = 5
 function workerGrid(count) {
-  const cols = 2, bW = 72, bH = 24, gX = 6, gY = 4
+  const cols = 2, bW = 80, bH = 26, gX = 6, gY = 4
   const rows = Math.ceil(count / cols)
   const totH = rows * bH + (rows - 1) * gY
   const sy   = Math.max(12, Math.round((SVG_H - totH) / 2))
@@ -560,33 +564,35 @@ onUnmounted(() => {
         <g v-if="mode === 3">
           <g v-for="(wp, i) in mode3Positions" :key="`w3-${i}`">
             <rect :x="wp.x" :y="wp.y" :width="wp.w" :height="wp.h"
-                  rx="4" :fill="C.card" :stroke="C.purple" stroke-width="1.5" />
-            <text :x="wp.x + 10" :y="wp.y + 8" style="font-size:10px">⚙</text>
-            <text :x="wp.x + 24" :y="wp.y + 17" :fill="C.fg" font-weight="bold"
-                  style="font-size:8px">Pod {{ i + 1 }}</text>
+                  rx="5" :fill="C.card" :stroke="C.purple" stroke-width="1.5" />
+            <g :transform="`translate(${wp.x + POD_LEFT_PAD}, ${wp.y + wp.h/2})`">
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle"
+                    class="pod-icon">⚙</text>
+              <text :x="POD_ICON_W + POD_GAP" y="0" text-anchor="start" dominant-baseline="middle"
+                    :fill="C.fg" class="pod-label">Pod {{ i + 1 }}</text>
+            </g>
           </g>
         </g>
 
         <!-- AUTO-SCALE WORKERS (Mode 4) -->
         <g v-if="mode === 4">
-          <rect x="634" y="10" width="52" height="18" rx="9" :fill="C.purple" />
-          <text x="660" y="23" text-anchor="middle" fill="white" font-weight="bold"
-                style="font-size:9.5px">KEDA</text>
           <g v-for="(w, i) in autoWorkers" :key="w.id"
              :style="{ opacity: w.status === 'stopping' ? 0 : w.status === 'starting' ? 0.55 : 1,
                        transition: 'opacity 0.4s ease' }">
             <template v-if="mode4Positions[i]">
               <rect :x="mode4Positions[i].x" :y="mode4Positions[i].y"
                     :width="mode4Positions[i].w" :height="mode4Positions[i].h"
-                    rx="4" :fill="C.card"
+                    rx="5" :fill="C.card"
                     :stroke="w.status === 'starting' ? C.orange : C.purple"
                     stroke-width="1.5" />
-              <text :x="mode4Positions[i].x + 10" :y="mode4Positions[i].y + 8"
-                    style="font-size:10px">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
-              <text :x="mode4Positions[i].x + 24" :y="mode4Positions[i].y + 17"
-                    :fill="C.fg" font-weight="bold" style="font-size:8px">
-                {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
-              </text>
+              <g :transform="`translate(${mode4Positions[i].x + POD_LEFT_PAD}, ${mode4Positions[i].y + mode4Positions[i].h/2})`">
+                <text x="0" y="0" text-anchor="middle" dominant-baseline="middle"
+                      class="pod-icon">{{ w.status === 'starting' ? '⏳' : '⚙' }}</text>
+                <text :x="POD_ICON_W + POD_GAP" y="0" text-anchor="start" dominant-baseline="middle"
+                      :fill="C.fg" class="pod-label">
+                  {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
+                </text>
+              </g>
             </template>
           </g>
         </g>
@@ -630,8 +636,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ── SVG font reset ──────────────────────────────────────────────────────────── */
+/* ── SVG: Nur Root auf 1px (Pod-Texte haben eigene font-size) ─────────────────── */
 .sd-canvas :deep(svg) { font-size: 1px !important; }
+.sd-canvas :deep(.pod-icon) { font-size: 16px !important; }
+.sd-canvas :deep(.pod-label) { font-size: 14px !important; font-weight: bold; }
 
 /* ── Container ───────────────────────────────────────────────────────────────── */
 .sd {
