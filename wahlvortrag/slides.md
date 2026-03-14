@@ -269,7 +269,11 @@ layout: default-with-footer
 
 <!-- SLIDE 6 — LIVE DEMO: SCALING SIMULATOR -->
 
-<ScalingDemo />
+<div class="slide-header"><span class="accent-pink">#</span> Live Demo: Scaling Simulator</div>
+
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;">
+  <ScalingDemo />
+</div>
 
 ---
 layout: two-cols-header-with-footer
