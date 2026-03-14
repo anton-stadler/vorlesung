@@ -490,18 +490,19 @@ onUnmounted(() => {
             @click="autoScaleMenuOpen = !autoScaleMenuOpen"
             title="Auto-Scaling">📈 Auto-Scale<span class="autoscale-label">: {{ autoScaleStrategyLabel }}</span></button>
           <Transition name="spanel">
-            <div v-if="autoScaleMenuOpen" class="autoscale-panel">
+            <div v-if="autoScaleMenuOpen" class="autoscale-panel" @click.stop>
               <div class="sp-title">
                 Auto-Scaling
                 <button class="sp-close" @click="autoScaleMenuOpen = false">×</button>
               </div>
-              <div class="autoscale-strategy-pills">
+              <div class="autoscale-strategy-pills" @click.stop>
                 <button
                   v-for="opt in ['queue', 'load', 'latency', 'hybrid']"
                   :key="opt"
+                  type="button"
                   class="mpill"
                   :class="{ active: autoScaleStrategy === opt }"
-                  @click="autoScaleStrategy = opt">
+                  @click.stop="autoScaleStrategy = opt">
                   {{ opt === 'queue' ? 'Queue' : opt === 'load' ? 'Load' : opt === 'latency' ? 'Latency' : 'Hybrid' }}
                 </button>
               </div>
@@ -1083,6 +1084,42 @@ onUnmounted(() => {
   flex-wrap: wrap;
   margin-bottom: 6px;
 }
+.mpill {
+  padding: 6px 10px;
+  min-height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--slide-border, #CBD5E1);
+  border-radius: 6px;
+  background: var(--slide-bg-card, #fff);
+  color: var(--slide-fg, #1A2B3C);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mpill:hover {
+  background: var(--slide-border, #E2E8F0);
+  border-color: var(--slide-muted, #94A3B8);
+}
+.mpill.active {
+  background: var(--accent-cyan, #028090);
+  color: white;
+  border-color: var(--accent-cyan, #028090);
+}
+.mpill.active:hover {
+  background: var(--accent-cyan, #028090);
+  color: white;
+}
+.sd--dark .mpill.active {
+  background: var(--slide-bg-card, #383A4A);
+  color: var(--accent-cyan, #8BE9FD);
+  border-color: var(--accent-cyan, #8BE9FD);
+}
+.sd--dark .mpill.active:hover {
+  background: var(--slide-bg-card, #383A4A);
+  color: var(--accent-cyan, #8BE9FD);
+}
 .autoscale-hint {
   font-size: 9px;
   color: var(--slide-muted, #64748B);
@@ -1207,13 +1244,12 @@ onUnmounted(() => {
   min-width: 20px;
 }
 
-/* settings panel transition */
+/* settings panel transition (no translateY to avoid panel overlapping toggle button) */
 .spanel-enter-active, .spanel-leave-active {
-  transition: opacity 0.15s, transform 0.15s;
+  transition: opacity 0.15s;
 }
 .spanel-enter-from, .spanel-leave-to {
   opacity: 0;
-  transform: translateY(-6px) scale(0.97);
 }
 
 /* ── Canvas ──────────────────────────────────────────────────────────────────── */
