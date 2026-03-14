@@ -154,7 +154,7 @@ layout: two-cols-header-with-footer
 
 <!-- SLIDE 4 — SCALING: DRONE ANALOGY -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Thought Experiment: How do you attack with drones?</div>
+<div class="slide-header"><span class="accent-pink">#</span> Thought Experiment: One big unit vs. many small ones</div>
 
 ::left::
 
@@ -162,8 +162,11 @@ layout: two-cols-header-with-footer
 
 <ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
   <li>Physical limits of hardware</li>
-  <li>Costs rise exponentially</li>
   <li>Single point of failure</li>
+</ul>
+<ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
+  <li>Lower latency — no network between components</li>
+  <li>Simpler programming model — shared memory</li>
 </ul>
 
 ::right::
@@ -173,7 +176,10 @@ layout: two-cols-header-with-footer
 <ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
   <li>Theoretically unlimited capacity</li>
   <li>Linear costs — pay per use</li>
-  <li>Failure of a single unit uncritical</li>
+</ul>
+<ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
+  <li>Higher latency — network overhead between nodes</li>
+  <li>More complex — distributed state &amp; coordination</li>
 </ul>
 
 ::bottom::
@@ -186,12 +192,9 @@ layout: two-cols-header-with-footer
   <div class="problem-insight" style="margin:0;flex:1;">
     <span class="accent-comment">»</span>
     <strong>Software analogy:</strong>
-    Drone = worker pod · Missile = high-performance server.
+    Drone = worker pod · Rocket = high-performance server.
     The swarm scales <span class="accent-cyan">horizontally</span> —
     and only works with <span class="accent-orange">decoupling via a message broker.</span>
-    <span class="muted" style="font-size:0.68rem;display:block;margin-top:0.25rem;">
-      ℹ Historical context: Drone swarm attacks were documented e.g. in the Ukraine war from 2022 onwards and are considered a prime example of decentralised system architecture.
-    </span>
     <span class="accent-comment">«</span>
   </div>
 </div>
