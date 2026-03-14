@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 220" width="680" height="220">
+  <defs>
+    <g id="drone">
+      <ellipse cx="0" cy="0" rx="18" ry="10" fill="#444" stroke="#222" stroke-width="1"/>
+      <circle cx="0" cy="0" r="6" fill="#007BAA"/>
+      <line x1="-18" y1="0" x2="-28" y2="0" stroke="#666" stroke-width="2"/>
+      <line x1="18" y1="0" x2="28" y2="0" stroke="#666" stroke-width="2"/>
+    </g>
+    <g id="rocket">
+      <path d="M0 -25 L8 20 L4 25 L-4 25 L-8 20 Z" fill="#555" stroke="#333" stroke-width="1"/>
+      <path d="M-4 25 L0 35 L4 25 M-8 20 L-12 28 L-8 20 M8 20 L12 28 L8 20" stroke="#444" stroke-width="1.5" fill="none"/>
+      <ellipse cx="0" cy="0" rx="3" ry="8" fill="#007BAA"/>
+    </g>
+  </defs>
+  <!-- Eine Drohne -->
+  <g transform="translate(120, 110)">
+    <use href="#drone"/>
+    <text x="0" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#333">Eine Drohne</text>
+    <text x="0" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">(Ausgangslage)</text>
+  </g>
+  <!-- Vertikal: Eine Rakete -->
+  <g transform="translate(340, 110)">
+    <use href="#rocket"/>
+    <text x="0" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#333">Vertikal</text>
+    <text x="0" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">eine Rakete (größere Einheit)</text>
+  </g>
+  <!-- Horizontal: Schwarm -->
+  <g transform="translate(520, 70)">
+    <use href="#drone" transform="translate(-45, 0)"/>
+    <use href="#drone" transform="translate(-15, -10)"/>
+    <use href="#drone" transform="translate(15, -10)"/>
+    <use href="#drone" transform="translate(45, 0)"/>
+    <use href="#drone" transform="translate(25, 25)"/>
+    <use href="#drone" transform="translate(-25, 25)"/>
+  </g>
+  <text x="520" y="155" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#333">Horizontal</text>
+  <text x="520" y="172" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Drohnenschwarm (viele Einheiten)</text>
+  <!-- Trennlinien -->
+  <line x1="230" y1="30" x2="230" y2="190" stroke="#ddd" stroke-width="1" stroke-dasharray="4 2"/>
+  <line x1="450" y1="30" x2="450" y2="190" stroke="#ddd" stroke-width="1" stroke-dasharray="4 2"/>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280">
+  <defs>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#007BAA"/>
+      <stop offset="100%" style="stop-color:#005a80"/>
+    </linearGradient>
+    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#C0397A"/>
+      <stop offset="100%" style="stop-color:#e84a8a"/>
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#007BAA"/>
+    </marker>
+    <marker id="arrowheadPink" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#C0397A"/>
+    </marker>
+  </defs>
+  <!-- Kamera (links) -->
+  <g transform="translate(60, 80)">
+    <rect x="0" y="20" width="100" height="70" rx="8" fill="#f0f0ec" stroke="#007BAA" stroke-width="2"/>
+    <circle cx="50" cy="55" r="22" fill="#e0e0dc" stroke="#007BAA" stroke-width="1.5"/>
+    <circle cx="50" cy="55" r="12" fill="#007BAA"/>
+    <rect x="35" y="95" width="30" height="8" rx="2" fill="#007BAA"/>
+    <text x="50" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#333">Kamera</text>
+  </g>
+  <!-- Feuer-Symbol (bei Kamera) -->
+  <g transform="translate(175, 95)">
+    <path d="M15 50 L25 20 L35 35 L45 15 L40 50 Z" fill="url(#fireGrad)" stroke="#a02860" stroke-width="1"/>
+    <text x="30" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#555">erkennt</text>
+  </g>
+  <!-- Pfeil Request zur Cloud -->
+  <line x1="165" y1="115" x2="275" y2="115" stroke="#007BAA" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="220" y="105" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#007BAA">Request</text>
+  <!-- Cloud (Mitte) -->
+  <g transform="translate(290, 60)">
+    <ellipse cx="80" cy="55" rx="75" ry="45" fill="url(#cloudGrad)" stroke="#005a80" stroke-width="1.5"/>
+    <ellipse cx="50" cy="50" rx="35" ry="28" fill="rgba(255,255,255,0.2)"/>
+    <text x="80" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="white">Cloud</text>
+    <text x="80" y="78" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="rgba(255,255,255,0.9)">verarbeitet</text>
+  </g>
+  <!-- Pfeil Antwort zurck -->
+  <line x1="365" y1="165" x2="175" y2="165" stroke="#C0397A" stroke-width="3" marker-end="url(#arrowheadPink)"/>
+  <text x="270" y="155" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#C0397A">Antwort</text>
+  <!-- Rechte Seite: gleiche Kamera als Empfnger (optional) oder nur Pfeil zurck zur Kamera -->
+  <text x="110" y="185" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#555">Ergebnis zurueck</text>
+</svg>
