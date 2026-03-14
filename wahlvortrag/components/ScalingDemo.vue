@@ -117,6 +117,22 @@ const sBox = computed(() => {
   return { x: WRK_X, y: Math.round((SVG_H - s.h) / 2), ...s }
 })
 
+// ── Ankerpunkte auf der linken Kante des Broker/Server (25 %–75 % der Höhe) ───
+const camArrowTargets = computed(() => {
+  const n = cameras.value
+  let targetX, topY, boxH
+  if (mode.value === 1) {
+    const s = sBox.value
+    targetX = s.x; topY = s.y; boxH = s.h
+  } else {
+    targetX = BRX; topY = BRY; boxH = BRH
+  }
+  return Array.from({ length: n }, (_, i) => {
+    const t = n <= 1 ? 0.5 : 0.25 + (i / (n - 1)) * 0.5
+    return { x: targetX, y: Math.round(topY + boxH * t) }
+  })
+})
+
 // ── Metrics ───────────────────────────────────────────────────────────────────
 const processingRate = computed(() => {
   if (mode.value <= 2) return VRATES[verticalSize.value - 1]
@@ -325,12 +341,21 @@ onUnmounted(() => {
         <!-- Background -->
         <rect width="800" height="250" rx="6" :fill="C.bg" />
 
-        <!-- ── Connector lines: cameras → target ── -->
+        <!-- Pfeilspitzen-Marker -->
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0.5 L0,6.5 L6.5,3.5 z" :fill="C.vMuted" />
+          </marker>
+        </defs>
+
+        <!-- ── Connector lines: cameras → Broker/Server, verteilt 25 %–75 %, Pfeil, aktiv = durchgezogen ── -->
         <line v-for="(cam, i) in camPositions" :key="`cl-${i}`"
-          :x1="cam.x + 19" :y1="cam.y"
-          :x2="mode === 1 ? sBox.x : BRX"
-          :y2="mode === 1 ? sBox.y + sBox.h / 2 : BRY + BRH / 2"
-          :stroke="C.connector" stroke-width="1" stroke-dasharray="4 3" />
+          :x1="cam.x + 5" :y1="cam.y"
+          :x2="camArrowTargets[i].x" :y2="camArrowTargets[i].y"
+          :stroke="cameraFiring[i] ? C.cyan : C.connector"
+          stroke-width="1"
+          :stroke-dasharray="cameraFiring[i] ? 'none' : '4 3'"
+          marker-end="url(#arr)" />
 
         <!-- Connector: broker → server (Mode 2) -->
         <line v-if="mode === 2"
