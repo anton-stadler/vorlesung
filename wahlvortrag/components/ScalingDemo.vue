@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 
 // ── Layout constants (SVG coordinate space 800 × 250) ─────────────────────────
 const SVG_W = 800
@@ -11,7 +11,7 @@ const BRH = 138   // broker height
 const WRK_X = 590 // worker / server column start x
 
 // ── Labels / tables ───────────────────────────────────────────────────────────
-const VLABELS = ['Small', 'Medium', 'Large', 'XL']
+const VLABELS = ['small', 'medium', 'large', 'x-large']
 const VRATES  = [3, 6, 12, 24]
 const VCOSTS  = [0.50, 2.00, 8.00, 32.00]
 const MTITLES = [
@@ -28,22 +28,31 @@ const verticalSize  = ref(1)
 const manualWorkers = ref(2)
 const autoWorkers   = ref([{ id: 1, status: 'active', addedAt: 0, load: 0 }])
 const queueLength   = ref(0)
+const messagesLost  = ref(0)
 const packets       = ref([])
+const cameraFiring  = reactive({})  // { [index]: true/false } – reaktive Map pro Kamera
+const PROCESSING_TIME_MS = 200
+const FIRE_ANIM_MS  = 1000
 const isBurst       = ref(false)
 const canvasOpacity = ref(1)
+
+const CAMERA_FIRES_PER_SEC = 2
+const CAMERA_FIRE_INTERVAL_MS = 1000 / CAMERA_FIRES_PER_SEC  // 500 ms
 
 let packetId    = 0
 let workerId    = 1
 let intervalId  = null
+let cameraFireTimeoutId = null
 let burstTimer  = null
 let scaleUpCD   = 0
 let scaleDownCD = 0
+let cameraFireStopped = false  // true nach onUnmounted, damit kein neuer Timeout geplant wird
 const MAX_PACKETS = 28
 
-// ── Camera positions ──────────────────────────────────────────────────────────
+// ── Camera positions (lockerer Abstand, mind. 40px zwischen den Kameras) ───────
 const camPositions = computed(() => {
   const n    = cameras.value
-  const step = Math.min(32, (SVG_H - 30) / Math.max(n, 1))
+  const step = Math.max(40, (SVG_H - 50) / Math.max(n, 1))
   const total = (n - 1) * step
   const sy    = (SVG_H - total) / 2
   return Array.from({ length: n }, (_, i) => ({ x: 76, y: Math.round(sy + i * step) }))
@@ -77,7 +86,7 @@ const processingRate = computed(() => {
   if (mode.value === 3) return manualWorkers.value * 3
   return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * 3
 })
-const incomingRate  = computed(() => cameras.value * 2)
+const incomingRate  = computed(() => cameras.value * 0.5)
 const throughput    = computed(() => Math.round(Math.min(processingRate.value, incomingRate.value)))
 const isOverloaded  = computed(() => mode.value === 1 && queueLength.value > 5)
 const costPerHour   = computed(() => {
@@ -86,13 +95,25 @@ const costPerHour   = computed(() => {
   return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * 0.5
 })
 
-// Worker utilization: clamped ratio of incoming vs processing, shared across active workers
+// Worker utilization: clamped ratio of incoming vs processing capacity
+// Mode 1 & 2: one server with processingRate = VRATES[size]; Mode 3 & 4: active workers × 3 fps each
 const workerUtilPct = computed(() => {
-  const active = mode.value === 3
-    ? manualWorkers.value
-    : autoWorkers.value.filter(w => w.status === 'active').length || 1
-  const perWorker = active > 0 ? incomingRate.value / active : 0
-  return Math.min(1, perWorker / 3) // 3 fps/worker is max
+  const capacity = processingRate.value
+  if (capacity <= 0) return 0
+  return Math.min(1, incomingRate.value / capacity)
+})
+
+// Display load: 100% when queue is full, otherwise worker utilization
+const effectiveLoad = computed(() =>
+  queueLength.value >= 20 ? 1 : workerUtilPct.value
+)
+
+// Total latency (ms): queue wait + processing time per message
+const latencyMs = computed(() => {
+  const rate = processingRate.value
+  if (rate <= 0) return null
+  const queueWaitMs = (queueLength.value / rate) * 1000
+  return Math.round(queueWaitMs + PROCESSING_TIME_MS)
 })
 
 const queueBarW  = computed(() => Math.round((Math.min(queueLength.value, 20) / 20) * (BRW - 22)))
@@ -109,21 +130,23 @@ function spawnPacket(x1, y1, x2, y2, color, ms) {
   }, ms + 120)
 }
 
-function spawnCameraPackets() {
-  const ppt = incomingRate.value * 0.2
-  const n   = Math.floor(ppt) + (Math.random() < ppt % 1 ? 1 : 0)
-  const ovr = isOverloaded.value ? 2.8 : 1
-  for (let i = 0; i < n; i++) {
-    if (packets.value.length >= MAX_PACKETS) break
-    const cam = camPositions.value[Math.floor(Math.random() * cameras.value)]
-    if (!cam) continue
-    if (mode.value === 1) {
-      const s = sBox.value
-      spawnPacket(cam.x + 19, cam.y, s.x, s.y + s.h / 2, '#028090', Math.round(1150 * ovr))
-    } else {
-      spawnPacket(cam.x + 19, cam.y, BRX, BRY + BRH / 2, '#028090', 1100)
+function fireOneCamera() {
+  try {
+    const n = cameras.value
+    if (n < 1) return
+    const camIdx = Math.floor(Math.random() * n)
+    cameraFiring[camIdx] = true
+    setTimeout(() => { cameraFiring[camIdx] = false }, FIRE_ANIM_MS)
+  } finally {
+    if (!cameraFireStopped) {
+      cameraFireTimeoutId = setTimeout(fireOneCamera, CAMERA_FIRE_INTERVAL_MS)
     }
   }
+}
+
+// Kamera-Pakete nur noch über fireOneCamera (2×/s); Queue-Simulation läuft weiter im Tick
+function spawnCameraPackets() {
+  // Keine Paket-Spawns mehr hier – kontinuierliches Feuern über cameraFireIntervalId
 }
 
 function spawnBrokerPackets() {
@@ -173,9 +196,11 @@ function runKEDA() {
 
 // ── Tick ──────────────────────────────────────────────────────────────────────
 function tick() {
-  const inc  = incomingRate.value  * 0.2
-  const proc = processingRate.value * 0.2
-  queueLength.value = Math.max(0, Math.min(20, queueLength.value + inc - proc))
+  const inc   = incomingRate.value  * 0.2
+  const proc  = processingRate.value * 0.2
+  const wouldBe = queueLength.value + inc - proc
+  if (wouldBe > 20) messagesLost.value += Math.round(wouldBe - 20)
+  queueLength.value = Math.max(0, Math.min(20, wouldBe))
   if (mode.value === 4) runKEDA()
   spawnCameraPackets()
   spawnBrokerPackets()
@@ -186,7 +211,8 @@ function switchMode(m) {
   if (m === mode.value) return
   canvasOpacity.value = 0
   setTimeout(() => {
-    mode.value = m; queueLength.value = 0; packets.value = []
+    mode.value = m; queueLength.value = 0; messagesLost.value = 0; packets.value = []
+    Object.keys(cameraFiring).forEach(k => delete cameraFiring[k])
     if (m === 4) {
       autoWorkers.value = [{ id: ++workerId, status: 'active', addedAt: Date.now(), load: 0 }]
       scaleUpCD = scaleDownCD = 0
@@ -203,8 +229,17 @@ function fireBurst() {
   burstTimer = setTimeout(() => { cameras.value = prev; isBurst.value = false }, 5000)
 }
 
-onMounted(() => { intervalId = setInterval(tick, 200) })
-onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burstTimer) })
+onMounted(() => {
+  cameraFireStopped = false
+  intervalId = setInterval(tick, 200)
+  cameraFireTimeoutId = setTimeout(fireOneCamera, CAMERA_FIRE_INTERVAL_MS)
+})
+onUnmounted(() => {
+  cameraFireStopped = true
+  clearInterval(intervalId)
+  if (cameraFireTimeoutId) clearTimeout(cameraFireTimeoutId)
+  if (burstTimer) clearTimeout(burstTimer)
+})
 </script>
 
 <template>
@@ -274,19 +309,23 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
           :x2="wp.x" :y2="wp.y + wp.h / 2"
           stroke="#CBD5E1" stroke-width="1" stroke-dasharray="4 3" />
 
-        <!-- ── CAMERAS ── -->
+        <!-- ── Left: Requests (incoming req/s) – with margin from cameras ── -->
+        <g>
+          <text x="22" y="118" text-anchor="middle" fill="#64748B" style="font-size:9px;font-weight:bold">Requests</text>
+          <text x="22" y="132" text-anchor="middle" fill="#028090" style="font-size:11px;font-weight:bold">{{ incomingRate }}</text>
+          <text x="22" y="144" text-anchor="middle" fill="#94A3B8" style="font-size:8px">req/s</text>
+        </g>
+
+        <!-- ── CAMERAS + Blitz-Kreis per CSS-Animation ── -->
         <g v-for="(cam, i) in camPositions" :key="`cam-${i}`">
-          <circle :cx="cam.x" :cy="cam.y" r="18" fill="none" stroke="#028090" stroke-width="1.5" opacity="0">
-            <animate attributeName="r"       from="18" to="30" dur="1.5s" repeatCount="indefinite" :begin="`${i * 0.2}s`" />
-            <animate attributeName="opacity" values="0.6;0"    dur="1.5s" repeatCount="indefinite" :begin="`${i * 0.2}s`" />
-          </circle>
-          <rect :x="cam.x - 18" :y="cam.y - 14" width="36" height="26" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1.5" />
+          <!-- Blitz-Symbol: erscheint kurz rechts neben der Kamera -->
+          <text :x="cam.x + 14" :y="cam.y + 4" style="font-size:14px"
+                class="cam-flash" :class="{ firing: cameraFiring[i] }">⚡</text>
+          <!-- Kamera-Icon -->
           <rect :x="cam.x - 12" :y="cam.y - 8"  width="16" height="12" rx="2" fill="#028090" />
           <circle :cx="cam.x - 4" :cy="cam.y - 2" r="4"   fill="#E2E8F0" />
           <circle :cx="cam.x - 4" :cy="cam.y - 2" r="2.5" fill="#028090" />
           <rect :x="cam.x - 10" :y="cam.y - 13" width="5" height="4" rx="1" fill="#028090" />
-          <text :x="cam.x" :y="cam.y + 20" text-anchor="middle" fill="#94A3B8"
-                style="font-size:8px">{{ i + 1 }}</text>
         </g>
 
         <!-- ── BROKER (Modes 2, 3, 4) ── -->
@@ -326,10 +365,29 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
           <!-- protocol label -->
           <text :x="BRX + BRW / 2" :y="BRY + BRH - 10" text-anchor="middle" fill="#94A3B8"
                 style="font-size:7.5px;font-style:italic">MQTT / RabbitMQ</text>
+          <!-- Throughput (successfully processed req/s) -->
+          <text :x="BRX + BRW / 2" :y="BRY + BRH + 18" text-anchor="middle" fill="#64748B"
+                style="font-size:8px">Throughput</text>
+          <text :x="BRX + BRW / 2" :y="BRY + BRH + 32" text-anchor="middle" fill="#0D9488"
+                style="font-size:11px;font-weight:bold">{{ throughput }} req/s</text>
+        </g>
+
+        <!-- ── Throughput (Mode 1: no broker) ── -->
+        <g v-if="mode === 1">
+          <text :x="(76 + sBox.x + sBox.w/2) / 2" :y="SVG_H - 28" text-anchor="middle" fill="#64748B"
+                style="font-size:8px">Throughput</text>
+          <text :x="(76 + sBox.x + sBox.w/2) / 2" :y="SVG_H - 14" text-anchor="middle" fill="#0D9488"
+                style="font-size:11px;font-weight:bold">{{ throughput }} req/s</text>
         </g>
 
         <!-- ── SERVER (Modes 1 & 2) ── -->
         <g v-if="mode <= 2">
+          <!-- Capacity (req/s) – more space above box -->
+          <text :x="sBox.x + sBox.w/2" :y="sBox.y - 44" text-anchor="middle" fill="#64748B"
+                style="font-size:8px">Capacity</text>
+          <text :x="sBox.x + sBox.w/2" :y="sBox.y - 30" text-anchor="middle" fill="#7B5EA7"
+                style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
+
           <rect v-if="isOverloaded"
                 :x="sBox.x - 5" :y="sBox.y - 5" :width="sBox.w + 10" :height="sBox.h + 10"
                 rx="11" fill="#E63946" class="overload-glow" />
@@ -337,33 +395,25 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
                 rx="7" fill="white"
                 :stroke="isOverloaded ? '#E63946' : '#E2E8F0'"
                 :stroke-width="isOverloaded ? 2.5 : 1.5" />
-          <!-- OVERLOADED badge -->
+          <!-- OVERLOADED badge (clear gap below Capacity) -->
           <g v-if="isOverloaded">
             <rect :x="sBox.x + sBox.w/2 - 33" :y="sBox.y - 19" width="66" height="16" rx="8" fill="#E63946" />
             <text :x="sBox.x + sBox.w/2" :y="sBox.y - 7"
                   text-anchor="middle" fill="white" font-weight="bold"
                   style="font-size:8px">OVERLOADED</text>
           </g>
-          <!-- server icon -->
-          <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 - 6"
+          <!-- icon + size only -->
+          <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 - 8"
                 text-anchor="middle" style="font-size:18px">🖥</text>
           <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 + 14"
                 text-anchor="middle" fill="#1A2B3C" font-weight="bold"
-                style="font-size:10px">Cloud Server</text>
-          <text :x="sBox.x + sBox.w/2" :y="sBox.y + sBox.h/2 + 26"
-                text-anchor="middle" fill="#64748B"
-                style="font-size:8.5px">{{ VLABELS[verticalSize - 1] }}</text>
-          <!-- Load bar -->
-          <text :x="sBox.x + 8" :y="sBox.y + sBox.h - 20"
-                fill="#94A3B8" style="font-size:7px">Load</text>
-          <rect :x="sBox.x + 8" :y="sBox.y + sBox.h - 16" :width="sBox.w - 16" height="7" rx="3" fill="#E2E8F0" />
-          <rect :x="sBox.x + 8" :y="sBox.y + sBox.h - 16"
-                :width="Math.round((sBox.w - 16) * workerUtilPct)" height="7" rx="3"
-                :fill="workerUtilPct >= 0.9 ? '#E63946' : workerUtilPct >= 0.6 ? '#F4A261' : '#028090'" />
+                style="font-size:11px">{{ VLABELS[verticalSize - 1] }}</text>
         </g>
 
-        <!-- ── WORKER PODS (Mode 3) ── -->
+        <!-- ── Right: Capacity (Mode 3) ── -->
         <g v-if="mode === 3">
+          <text x="668" y="22" text-anchor="middle" fill="#64748B" style="font-size:8px">Capacity</text>
+          <text x="668" y="36" text-anchor="middle" fill="#7B5EA7" style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
           <g v-for="(wp, i) in mode3Positions" :key="`w3-${i}`">
             <rect :x="wp.x" :y="wp.y" :width="wp.w" :height="wp.h"
                   rx="5" fill="white" stroke="#7B5EA7" stroke-width="1.5" />
@@ -371,18 +421,6 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
             <text :x="wp.x + 12" :y="wp.y + 16" style="font-size:11px">⚙</text>
             <text :x="wp.x + 27" :y="wp.y + 15" fill="#1A2B3C" font-weight="bold"
                   style="font-size:9px">Pod {{ i + 1 }}</text>
-            <!-- load bar -->
-            <text :x="wp.x + 5" :y="wp.y + wp.h - 10"
-                  fill="#94A3B8" style="font-size:6.5px">Load</text>
-            <rect :x="wp.x + 24" :y="wp.y + wp.h - 15" :width="wp.w - 28" height="6" rx="3" fill="#E2E8F0" />
-            <rect :x="wp.x + 24" :y="wp.y + wp.h - 15"
-                  :width="Math.round((wp.w - 28) * workerUtilPct)" height="6" rx="3"
-                  :fill="workerUtilPct >= 0.9 ? '#E63946' : workerUtilPct >= 0.6 ? '#F4A261' : '#028090'" />
-            <!-- util pct text -->
-            <text :x="wp.x + wp.w - 4" :y="wp.y + wp.h - 10"
-                  text-anchor="end" fill="#64748B" style="font-size:6.5px">
-              {{ Math.round(workerUtilPct * 100) }}%
-            </text>
           </g>
         </g>
 
@@ -392,6 +430,9 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
           <rect x="634" y="10" width="52" height="18" rx="9" fill="#7B5EA7" />
           <text x="660" y="23" text-anchor="middle" fill="white" font-weight="bold"
                 style="font-size:9.5px">KEDA</text>
+          <!-- Capacity (req/s) -->
+          <text x="668" y="38" text-anchor="middle" fill="#64748B" style="font-size:8px">Capacity</text>
+          <text x="668" y="52" text-anchor="middle" fill="#7B5EA7" style="font-size:10px;font-weight:bold">{{ processingRate }} req/s</text>
 
           <g v-for="(w, i) in autoWorkers" :key="w.id"
              :style="{ opacity: w.status === 'stopping' ? 0 : w.status === 'starting' ? 0.55 : 1,
@@ -411,35 +452,8 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
                     fill="#1A2B3C" font-weight="bold" style="font-size:9px">
                 {{ w.status === 'starting' ? 'starting…' : `Pod ${i + 1}` }}
               </text>
-              <!-- load bar (only for active workers) -->
-              <template v-if="w.status === 'active'">
-                <text :x="mode4Positions[i].x + 5" :y="mode4Positions[i].y + mode4Positions[i].h - 10"
-                      fill="#94A3B8" style="font-size:6.5px">Load</text>
-                <rect :x="mode4Positions[i].x + 24" :y="mode4Positions[i].y + mode4Positions[i].h - 15"
-                      :width="mode4Positions[i].w - 28" height="6" rx="3" fill="#E2E8F0" />
-                <rect :x="mode4Positions[i].x + 24" :y="mode4Positions[i].y + mode4Positions[i].h - 15"
-                      :width="Math.round((mode4Positions[i].w - 28) * workerUtilPct)" height="6" rx="3"
-                      :fill="workerUtilPct >= 0.9 ? '#E63946' : workerUtilPct >= 0.6 ? '#F4A261' : '#028090'" />
-                <text :x="mode4Positions[i].x + mode4Positions[i].w - 4"
-                      :y="mode4Positions[i].y + mode4Positions[i].h - 10"
-                      text-anchor="end" fill="#64748B" style="font-size:6.5px">
-                  {{ Math.round(workerUtilPct * 100) }}%
-                </text>
-              </template>
             </template>
           </g>
-        </g>
-
-        <!-- ── PACKETS ── -->
-        <g v-for="p in packets" :key="p.id">
-          <circle :cx="p.x1" :cy="p.y1" r="5.5" :fill="p.color">
-            <animateTransform attributeName="transform" type="translate"
-              from="0 0" :to="`${p.x2 - p.x1} ${p.y2 - p.y1}`"
-              :dur="`${p.ms}ms`" begin="0s" fill="freeze" />
-            <animate attributeName="opacity"
-              values="1;1;0" keyTimes="0;0.72;1"
-              :dur="`${p.ms}ms`" begin="0s" fill="freeze" />
-          </circle>
         </g>
 
       </svg>
@@ -447,31 +461,28 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
 
     <!-- Metrics -->
     <div class="sd-metrics">
-      <div class="metric">
-        <div class="m-label">Throughput</div>
-        <div class="m-val" :style="{ color: isOverloaded ? '#E63946' : '' }">
-          {{ throughput }}<span class="m-unit"> fps</span>
-        </div>
-      </div>
-      <div class="metric">
+      <div v-if="mode > 1" class="metric">
         <div class="m-label">Queue</div>
         <div class="m-val" :style="{ color: queueLength >= 8 ? '#E63946' : queueLength >= 5 ? '#F4A261' : '' }">
           {{ Math.round(queueLength) }}<span class="m-unit"> / 20</span>
         </div>
       </div>
       <div class="metric">
-        <div class="m-label">Workers</div>
-        <div class="m-val">
-          <template v-if="mode <= 2">{{ VLABELS[verticalSize - 1] }}</template>
-          <template v-else-if="mode === 3">{{ manualWorkers }}</template>
-          <template v-else>{{ autoWorkers.filter(w => w.status === 'active').length }}</template>
+        <div class="m-label">Load</div>
+        <div class="m-val" :style="{ color: effectiveLoad >= 0.9 ? '#E63946' : effectiveLoad >= 0.6 ? '#F4A261' : '' }">
+          {{ Math.round(effectiveLoad * 100) }}<span class="m-unit">%</span>
         </div>
       </div>
       <div class="metric">
-        <div class="m-label">Load / Worker</div>
-        <div class="m-val" :style="{ color: workerUtilPct >= 0.9 ? '#E63946' : workerUtilPct >= 0.6 ? '#F4A261' : '' }">
-          {{ Math.round(workerUtilPct * 100) }}<span class="m-unit">%</span>
+        <div class="m-label">Latency</div>
+        <div class="m-val">
+          <template v-if="latencyMs != null">≈ {{ latencyMs }}<span class="m-unit"> ms</span></template>
+          <template v-else>—</template>
         </div>
+      </div>
+      <div class="metric" :class="{ 'metric-lost': messagesLost > 0 }">
+        <div class="m-label">Message lost</div>
+        <div class="m-val" :style="{ color: messagesLost > 0 ? '#E63946' : '' }">{{ Math.round(messagesLost) }}</div>
       </div>
       <div class="metric">
         <div class="m-label">Cost / hr</div>
@@ -554,8 +565,18 @@ onUnmounted(() => { clearInterval(intervalId); if (burstTimer) clearTimeout(burs
 .m-val   { font-size: 14px; font-weight: bold; color: #1A2B3C; transition: color 0.3s; line-height: 1.2; }
 .m-unit  { font-size: 8.5px; font-weight: normal; color: #94A3B8; }
 .m-note  { font-size: 7px; color: #94A3B8; font-style: italic; }
+.metric-lost { border-color: #E63946; background: #FEF2F2; }
 
 /* ── Overload glow ──────────────────────────────────────────────────────────── */
 @keyframes overload-glow { 0%,100% { opacity:.10 } 50% { opacity:.22 } }
 .overload-glow { animation: overload-glow 0.75s ease-in-out infinite; }
+
+/* ── Kamera-Blitz ──────────────────────────────────────────────────────────── */
+.cam-flash {
+  opacity: 0;
+  pointer-events: none;
+}
+.cam-flash.firing {
+  opacity: 1;
+}
 </style>
