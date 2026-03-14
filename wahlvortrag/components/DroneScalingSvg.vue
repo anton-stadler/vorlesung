@@ -12,11 +12,11 @@
         <circle cx="127" cy="28" r="7" style="fill:none;stroke:#94a3b8;" stroke-width="1.5" />
         <circle cx="99" cy="15" r="7" style="fill:none;stroke:#94a3b8;" stroke-width="1.5" />
         <circle cx="99" cy="41" r="7" style="fill:none;stroke:#94a3b8;" stroke-width="1.5" />
-        <text x="100" y="57" style="fill:#94a3b8;font-size:9px;font-family:monospace;" text-anchor="middle">1 Drohne</text>
+        <text x="100" y="57" style="fill:#94a3b8;font-size:9px;font-family:monospace;" text-anchor="middle">1 drone</text>
         <!-- Down arrow -->
         <text x="100" y="75" style="fill:#fb923c;font-size:20px;" text-anchor="middle">↓</text>
         <text x="100" y="89" style="fill:#94a3b8;font-size:8px;font-family:monospace;" text-anchor="middle">Vertical Scaling</text>
-        <text x="100" y="99" style="fill:#64748b;font-size:7px;font-family:monospace;" text-anchor="middle">mehr Kraft pro Einheit</text>
+        <text x="100" y="99" style="fill:#64748b;font-size:7px;font-family:monospace;" text-anchor="middle">more power per unit</text>
         <!-- Rocket -->
         <rect x="86" y="108" width="28" height="55" rx="5" style="fill:#ef4444;stroke:#dc2626;" stroke-width="1.5" />
         <polygon points="86,108 114,108 100,92" style="fill:#dc2626;" />
@@ -24,7 +24,7 @@
         <polygon points="114,138 128,158 114,154" style="fill:#b91c1c;" />
         <ellipse cx="100" cy="165" rx="9" ry="5" style="fill:#fb923c;" opacity="0.85" />
         <ellipse cx="100" cy="171" rx="6" ry="4" style="fill:#fbbf24;" opacity="0.65" />
-        <text x="100" y="183" style="fill:#f87171;font-size:8px;font-family:monospace;" text-anchor="middle">Rakete — exponentiell teurer</text>
+        <text x="100" y="183" style="fill:#f87171;font-size:8px;font-family:monospace;" text-anchor="middle">Rocket — exponentially more expensive</text>
       </svg>
     </div>
 
@@ -98,14 +98,14 @@
         </g>
         <!-- +∞ indicator -->
         <text x="120" y="91" style="fill:var(--accent-green,#4ade80);font-size:16px;font-weight:bold;" text-anchor="middle">+∞</text>
-        <text x="120" y="103" style="fill:#94a3b8;font-size:8px;font-family:monospace;" text-anchor="middle">beliebig viele hinzufügbar</text>
+        <text x="120" y="103" style="fill:#94a3b8;font-size:8px;font-family:monospace;" text-anchor="middle">add as many as you like</text>
         <!-- Linear cost bar -->
         <rect x="20" y="112" width="200" height="14" rx="3" style="fill:#1e293b;stroke:#334155;" stroke-width="1" />
         <rect x="20" y="112" width="70" height="14" rx="3" style="fill:var(--accent-green,#4ade80);" opacity="0.35" />
         <text x="120" y="123" style="fill:var(--accent-green,#4ade80);font-size:7px;font-family:monospace;" text-anchor="middle">lineare Kosten · pay-per-use</text>
-        <text x="120" y="144" style="fill:var(--accent-cyan,#38bdf8);font-size:9px;font-family:monospace;" text-anchor="middle">7 Drohnen → 7× Kapazität</text>
-        <text x="120" y="157" style="fill:#94a3b8;font-size:8px;font-family:monospace;" text-anchor="middle">1 fällt aus → Schwarm läuft weiter</text>
-        <text x="120" y="172" style="fill:#64748b;font-size:7px;font-family:monospace;" text-anchor="middle">kein Single Point of Failure</text>
+        <text x="120" y="144" style="fill:var(--accent-cyan,#38bdf8);font-size:9px;font-family:monospace;" text-anchor="middle">7 drones → 7× capacity</text>
+        <text x="120" y="157" style="fill:#94a3b8;font-size:8px;font-family:monospace;" text-anchor="middle">1 fails → swarm continues</text>
+        <text x="120" y="172" style="fill:#64748b;font-size:7px;font-family:monospace;" text-anchor="middle">no Single Point of Failure</text>
       </svg>
     </div>
 

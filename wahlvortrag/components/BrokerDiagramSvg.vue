@@ -19,11 +19,11 @@
         <!-- Worker box -->
         <rect x="172" y="38" width="78" height="40" rx="5" fill="transparent" stroke="#f87171" stroke-width="2" />
         <text x="211" y="55" style="fill:currentColor;font-size:10px;font-family:monospace;" text-anchor="middle">⚙ Worker</text>
-        <text x="211" y="70" style="fill:#f87171;font-size:9px;font-family:monospace;" text-anchor="middle">feste Adresse</text>
+        <text x="211" y="70" style="fill:#f87171;font-size:9px;font-family:monospace;" text-anchor="middle">fixed address</text>
         <!-- Crash X -->
         <line x1="190" y1="90" x2="232" y2="120" stroke="#f87171" stroke-width="2.5" />
         <line x1="232" y1="90" x2="190" y2="120" stroke="#f87171" stroke-width="2.5" />
-        <text x="211" y="130" style="fill:#f87171;font-size:8px;font-family:monospace;" text-anchor="middle">Absturz → Verlust</text>
+        <text x="211" y="130" style="fill:#f87171;font-size:8px;font-family:monospace;" text-anchor="middle">Crash → loss</text>
       </svg>
     </div>
 
@@ -59,12 +59,12 @@
 
         <!-- Vertical decoupling divider line (after arrow tip, before worker box) -->
         <line x1="263" y1="8" x2="263" y2="122" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.35" />
-        <text x="263" y="5" style="fill:currentColor;font-size:7px;font-family:monospace;opacity:0.5;" text-anchor="middle">kein direkter Kontakt</text>
+        <text x="263" y="5" style="fill:currentColor;font-size:7px;font-family:monospace;opacity:0.5;" text-anchor="middle">no direct contact</text>
 
         <!-- Worker box -->
         <rect x="268" y="45" width="68" height="38" rx="5" fill="transparent" stroke="#a78bfa" stroke-width="2" />
         <text x="302" y="62" style="fill:#a78bfa;font-size:10px;font-family:monospace;" text-anchor="middle">⚙ Worker</text>
-        <text x="302" y="76" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">beliebig viele</text>
+        <text x="302" y="76" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">any number</text>
       </svg>
     </div>
 

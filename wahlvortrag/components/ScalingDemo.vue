@@ -85,11 +85,11 @@ const autoScaleStrategyLabel = computed(() => {
 
 const randomizerLabel = computed(() => {
   const r = randomizer.value
-  if (r < 0.01) return 'gleichmäßig'
-  if (r < 0.30) return 'leicht variabel'
-  if (r < 0.60) return 'variabel'
-  if (r < 0.85) return 'burstig'
-  return 'chaotisch'
+  if (r < 0.01) return 'uniform'
+  if (r < 0.30) return 'slightly variable'
+  if (r < 0.60) return 'variable'
+  if (r < 0.85) return 'bursty'
+  return 'chaotic'
 })
 
 // connectorDash is now per-camera (see template) — this helper is no longer used
@@ -502,20 +502,20 @@ onUnmounted(() => {
                   {{ opt === 'queue' ? 'Queue' : opt === 'load' ? 'Load' : opt === 'latency' ? 'Latency' : 'Hybrid' }}
                 </button>
               </div>
-              <p v-if="autoScaleStrategy === 'queue'" class="autoscale-hint">Skaliert nach Nachrichten in der Queue.</p>
-              <p v-else-if="autoScaleStrategy === 'load'" class="autoscale-hint">Skaliert nach durchschnittlicher Auslastung (Ziel).</p>
-              <p v-else-if="autoScaleStrategy === 'latency'" class="autoscale-hint">Skaliert nach Latenz (Wartezeit in der Queue).</p>
-              <p v-else class="autoscale-hint">Scale-up wenn Queue ODER Latenz Schwellen überschreiten.</p>
+              <p v-if="autoScaleStrategy === 'queue'" class="autoscale-hint">Scale by messages in queue.</p>
+              <p v-else-if="autoScaleStrategy === 'load'" class="autoscale-hint">Scale by average load (target).</p>
+              <p v-else-if="autoScaleStrategy === 'latency'" class="autoscale-hint">Scale by latency (wait time in queue).</p>
+              <p v-else class="autoscale-hint">Scale up when queue OR latency thresholds are exceeded.</p>
               <div class="sp-sep"></div>
               <!-- Queue thresholds -->
               <template v-if="autoScaleStrategy === 'queue' || autoScaleStrategy === 'hybrid'">
                 <div class="sp-row">
-                  <span class="sp-label">Scale-up ab Queue</span>
+                  <span class="sp-label">Scale up from queue</span>
                   <input type="range" min="1" max="10" v-model.number="queueScaleUp" class="sp-slider" />
                   <span class="sp-val">{{ queueScaleUp }}</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale-down unter Queue</span>
+                  <span class="sp-label">Scale down below queue</span>
                   <input type="range" min="0" max="5" v-model.number="queueScaleDown" class="sp-slider" />
                   <span class="sp-val">{{ queueScaleDown }}</span>
                 </div>
@@ -524,17 +524,17 @@ onUnmounted(() => {
               <!-- Load thresholds -->
               <template v-if="autoScaleStrategy === 'load'">
                 <div class="sp-row">
-                  <span class="sp-label">Ziel Load</span>
+                  <span class="sp-label">Target load</span>
                   <input type="range" min="40" max="95" v-model.number="loadTargetPct" class="sp-slider" />
                   <span class="sp-val">{{ loadTargetPct }}%</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale-up ab</span>
+                  <span class="sp-label">Scale up from</span>
                   <input type="range" min="50" max="98" v-model.number="loadScaleUpPct" class="sp-slider" />
                   <span class="sp-val">{{ loadScaleUpPct }}%</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale-down unter</span>
+                  <span class="sp-label">Scale down below</span>
                   <input type="range" min="5" max="50" v-model.number="loadScaleDownPct" class="sp-slider" />
                   <span class="sp-val">{{ loadScaleDownPct }}%</span>
                 </div>
@@ -542,12 +542,12 @@ onUnmounted(() => {
               <!-- Latency thresholds (also for hybrid) -->
               <template v-if="autoScaleStrategy === 'latency' || autoScaleStrategy === 'hybrid'">
                 <div class="sp-row">
-                  <span class="sp-label">Scale-up ab Latency</span>
+                  <span class="sp-label">Scale up from latency</span>
                   <input type="range" min="200" max="800" step="50" v-model.number="latencyScaleUpMs" class="sp-slider" />
                   <span class="sp-val">{{ latencyScaleUpMs }} ms</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale-down unter Latency</span>
+                  <span class="sp-label">Scale down below latency</span>
                   <input type="range" min="100" max="400" step="50" v-model.number="latencyScaleDownMs" class="sp-slider" />
                   <span class="sp-val">{{ latencyScaleDownMs }} ms</span>
                 </div>
@@ -563,24 +563,24 @@ onUnmounted(() => {
           class="settings-btn"
           :class="{ active: settingsOpen }"
           @click="settingsOpen = !settingsOpen"
-          title="Einstellungen">⚙</button>
+          title="Settings">⚙</button>
 
         <Transition name="spanel">
           <div v-if="settingsOpen" class="settings-panel">
             <div class="sp-title">
-              Einstellungen
+              Settings
               <button class="sp-close" @click="settingsOpen = false">×</button>
             </div>
 
             <div class="sp-row">
-              <span class="sp-label">Req / Kamera</span>
+              <span class="sp-label">Req / camera</span>
               <input type="range" min="0.1" max="2" step="0.1"
                      v-model.number="ratePerCamera" class="sp-slider" />
               <span class="sp-val">{{ ratePerCamera.toFixed(1) }}/s</span>
             </div>
 
             <div class="sp-row">
-              <span class="sp-label">Rate / Instanz <span class="sp-sub">(small)</span></span>
+              <span class="sp-label">Rate / instance <span class="sp-sub">(small)</span></span>
               <input type="range" min="0.5" max="6" step="0.5"
                      v-model.number="baseRate" class="sp-slider" />
               <span class="sp-val">{{ baseRate.toFixed(1) }}/s</span>
@@ -605,13 +605,13 @@ onUnmounted(() => {
             <div class="sp-sep"></div>
 
             <div class="sp-row sp-row-toggle">
-              <span class="sp-label">Animationen</span>
+              <span class="sp-label">Animations</span>
               <label class="sp-toggle">
                 <input type="checkbox" v-model="showAnimations" />
                 <span class="sp-toggle-track" :class="{ on: showAnimations }">
                   <span class="sp-toggle-thumb"></span>
                 </span>
-                <span class="sp-toggle-lbl">{{ showAnimations ? 'an' : 'aus' }}</span>
+                <span class="sp-toggle-lbl">{{ showAnimations ? 'on' : 'off' }}</span>
               </label>
             </div>
           </div>
