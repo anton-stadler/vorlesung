@@ -190,6 +190,7 @@ const effectiveLoad = computed(() =>
 const latencyMs = computed(() => {
   const rate = processingRate.value
   if (rate <= 0) return null
+  if (mode.value === 1) return PROCESSING_TIME_MS  // Keine Queue → nur Bearbeitungszeit
   return Math.round((queueLength.value / rate) * 1000 + PROCESSING_TIME_MS)
 })
 
