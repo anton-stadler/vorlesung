@@ -623,7 +623,7 @@ onUnmounted(() => {
     <div class="sd-canvas" :style="{ opacity: canvasOpacity, transition: 'opacity 0.2s' }">
       <svg :width="SVG_W" :height="SVG_H" :viewBox="`0 0 ${SVG_W} ${SVG_H}`"
            xmlns="http://www.w3.org/2000/svg"
-           style="width:100%;display:block;font-family:'JetBrains Mono',monospace;">
+           style="width:100%;height:100%;display:block;font-family:'JetBrains Mono',monospace;">
 
         <!-- Background -->
         <rect class="sd-canvas-bg" width="800" height="250" rx="6" />
