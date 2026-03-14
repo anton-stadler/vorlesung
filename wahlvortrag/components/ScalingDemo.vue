@@ -71,8 +71,8 @@ const queueScaleDown      = ref(1)
 const loadTargetPct       = ref(70)
 const loadScaleUpPct      = ref(80)
 const loadScaleDownPct    = ref(30)
-const latencyScaleUpMs    = ref(400)
-const latencyScaleDownMs  = ref(200)
+const latencyScaleOutMs    = ref(400)
+const latencyScaleInMs  = ref(200)
 // Hybrid reuses queueScaleUp/Down and latencyScaleUpMs/latencyScaleDownMs
 
 const autoScaleStrategyLabel = computed(() => {
@@ -267,7 +267,7 @@ function fireOneCamera() {
     const wouldBe = queueLength.value + 1
     const newQueue = Math.min(20, wouldBe)
     const lost = wouldBe - newQueue
-    const countAsLost = lost > 0 && (mode.value !== 1 || incomingRate.value > processingRate.value)
+    const countAsLost = lost > 0 && mode.value !== 1
     if (countAsLost) messagesLost.value = messagesLost.value + lost
     queueLength.value = newQueue
   } finally {
@@ -326,11 +326,11 @@ function runKEDA() {
     shouldScaleUp = load > loadScaleUpPct.value / 100
     shouldScaleDown = load < loadScaleDownPct.value / 100
   } else if (strategy === 'latency') {
-    shouldScaleUp = lat != null && lat > latencyScaleUpMs.value
-    shouldScaleDown = lat != null && lat < latencyScaleDownMs.value
+    shouldScaleUp = lat != null && lat > latencyScaleOutMs.value
+    shouldScaleDown = lat != null && lat < latencyScaleInMs.value
   } else if (strategy === 'hybrid') {
-    shouldScaleUp = q > queueScaleUp.value || (lat != null && lat > latencyScaleUpMs.value)
-    shouldScaleDown = q < queueScaleDown.value && (lat == null || lat < latencyScaleDownMs.value)
+    shouldScaleUp = q > queueScaleUp.value || (lat != null && lat > latencyScaleOutMs.value)
+    shouldScaleDown = q < queueScaleDown.value && (lat == null || lat < latencyScaleInMs.value)
   }
 
   if (shouldScaleUp && nonStopping < 16 && scaleUpCD <= 0) {
@@ -350,6 +350,9 @@ function tick() {
   const proc    = processingRate.value * 0.2
   const wouldBe = queueLength.value - proc
   queueLength.value = Math.max(0, Math.min(20, wouldBe))
+  if (mode.value === 1 && incomingRate.value > processingRate.value) {
+    messagesLost.value += (incomingRate.value - processingRate.value) * 0.2
+  }
   if (mode.value === 4) runKEDA()
   spawnBrokerPackets()
 }
@@ -510,12 +513,12 @@ onUnmounted(() => {
               <!-- Queue thresholds -->
               <template v-if="autoScaleStrategy === 'queue' || autoScaleStrategy === 'hybrid'">
                 <div class="sp-row">
-                  <span class="sp-label">Scale up from queue</span>
+                  <span class="sp-label">Scale out from queue</span>
                   <input type="range" min="1" max="10" v-model.number="queueScaleUp" class="sp-slider" />
                   <span class="sp-val">{{ queueScaleUp }}</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale down below queue</span>
+                  <span class="sp-label">Scale in below queue</span>
                   <input type="range" min="0" max="5" v-model.number="queueScaleDown" class="sp-slider" />
                   <span class="sp-val">{{ queueScaleDown }}</span>
                 </div>
@@ -534,7 +537,7 @@ onUnmounted(() => {
                   <span class="sp-val">{{ loadScaleUpPct }}%</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale down below</span>
+                  <span class="sp-label">Scale in below</span>
                   <input type="range" min="5" max="50" v-model.number="loadScaleDownPct" class="sp-slider" />
                   <span class="sp-val">{{ loadScaleDownPct }}%</span>
                 </div>
@@ -542,14 +545,14 @@ onUnmounted(() => {
               <!-- Latency thresholds (also for hybrid) -->
               <template v-if="autoScaleStrategy === 'latency' || autoScaleStrategy === 'hybrid'">
                 <div class="sp-row">
-                  <span class="sp-label">Scale up from latency</span>
-                  <input type="range" min="200" max="800" step="50" v-model.number="latencyScaleUpMs" class="sp-slider" />
-                  <span class="sp-val">{{ latencyScaleUpMs }} ms</span>
+                  <span class="sp-label">Scale out from latency</span>
+                  <input type="range" min="200" max="800" step="50" v-model.number="latencyScaleOutMs" class="sp-slider" />
+                  <span class="sp-val">{{ latencyScaleOutMs }} ms</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale down below latency</span>
-                  <input type="range" min="100" max="400" step="50" v-model.number="latencyScaleDownMs" class="sp-slider" />
-                  <span class="sp-val">{{ latencyScaleDownMs }} ms</span>
+                  <span class="sp-label">Scale in below latency</span>
+                  <input type="range" min="100" max="400" step="50" v-model.number="latencyScaleInMs" class="sp-slider" />
+                  <span class="sp-val">{{ latencyScaleInMs }} ms</span>
                 </div>
               </template>
             </div>
