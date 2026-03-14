@@ -54,6 +54,26 @@ const baseRate       = ref(1.0)   // processing fps for small instance
 const randomizer     = ref(0)     // 0 = deterministic, 1 = chaotic
 const showAnimations = ref(true)  // camera flash + dashed connectors
 
+// ── Auto-Scaling (Mode 4) ──────────────────────────────────────────────────────
+const autoScaleStrategy  = ref('queue')   // 'queue' | 'load' | 'latency' | 'hybrid'
+const autoScaleMenuOpen   = ref(false)
+const queueScaleUp        = ref(3)
+const queueScaleDown      = ref(1)
+const loadTargetPct       = ref(70)
+const loadScaleUpPct      = ref(80)
+const loadScaleDownPct    = ref(30)
+const latencyScaleUpMs    = ref(400)
+const latencyScaleDownMs  = ref(200)
+// Hybrid reuses queueScaleUp/Down and latencyScaleUpMs/latencyScaleDownMs
+
+const autoScaleStrategyLabel = computed(() => {
+  const s = autoScaleStrategy.value
+  if (s === 'queue') return 'Queue'
+  if (s === 'load') return `Load (${loadTargetPct.value}%)`
+  if (s === 'latency') return 'Latency'
+  return 'Hybrid'
+})
+
 const randomizerLabel = computed(() => {
   const r = randomizer.value
   if (r < 0.01) return 'gleichmäßig'
@@ -264,10 +284,15 @@ function spawnBrokerPackets() {
   }
 }
 
-// ── KEDA ──────────────────────────────────────────────────────────────────────
+// ── KEDA / Auto-Scale ─────────────────────────────────────────────────────────
 function runKEDA() {
   const now = Date.now()
-  const q   = queueLength.value
+  const q = queueLength.value
+  const load = effectiveLoad.value
+  const lat = latencyMs.value
+  const strategy = autoScaleStrategy.value
+  const activeCount = autoWorkers.value.filter(w => w.status === 'active').length
+
   autoWorkers.value.forEach(w => {
     if (w.status === 'starting' && now - w.addedAt >= 3000) w.status = 'active'
   })
@@ -275,15 +300,33 @@ function runKEDA() {
     !(w.status === 'stopping' && now - w.stoppedAt >= 400)
   )
   const nonStopping = autoWorkers.value.filter(w => w.status !== 'stopping').length
-  if (q > 3 && nonStopping < 16 && scaleUpCD <= 0) {
+
+  let shouldScaleUp = false
+  let shouldScaleDown = false
+
+  if (strategy === 'queue') {
+    shouldScaleUp = q > queueScaleUp.value
+    shouldScaleDown = q < queueScaleDown.value
+  } else if (strategy === 'load') {
+    shouldScaleUp = load > loadScaleUpPct.value / 100
+    shouldScaleDown = load < loadScaleDownPct.value / 100
+  } else if (strategy === 'latency') {
+    shouldScaleUp = lat != null && lat > latencyScaleUpMs.value
+    shouldScaleDown = lat != null && lat < latencyScaleDownMs.value
+  } else if (strategy === 'hybrid') {
+    shouldScaleUp = q > queueScaleUp.value || (lat != null && lat > latencyScaleUpMs.value)
+    shouldScaleDown = q < queueScaleDown.value && (lat == null || lat < latencyScaleDownMs.value)
+  }
+
+  if (shouldScaleUp && nonStopping < 16 && scaleUpCD <= 0) {
     autoWorkers.value.push({ id: ++workerId, status: 'starting', addedAt: now, load: 0 })
     scaleUpCD = 12
   }
-  if (q < 1 && autoWorkers.value.filter(w => w.status === 'active').length > 1 && scaleDownCD <= 0) {
+  if (shouldScaleDown && activeCount > 1 && scaleDownCD <= 0) {
     const last = [...autoWorkers.value].reverse().find(w => w.status === 'active')
     if (last) { last.status = 'stopping'; last.stoppedAt = now; scaleDownCD = 25 }
   }
-  if (scaleUpCD  > 0) scaleUpCD--
+  if (scaleUpCD > 0) scaleUpCD--
   if (scaleDownCD > 0) scaleDownCD--
 }
 
@@ -368,6 +411,83 @@ onUnmounted(() => {
         <button v-if="mode === 4" class="burst-btn" :disabled="isBurst" @click="fireBurst">
           {{ isBurst ? '🔥 Bursting…' : '🔥 Fire burst!' }}
         </button>
+
+        <!-- Auto-Scaling menu (Mode 4 only) -->
+        <div v-if="mode === 4" class="autoscale-wrap">
+          <button
+            class="autoscale-btn"
+            :class="{ active: autoScaleMenuOpen }"
+            @click="autoScaleMenuOpen = !autoScaleMenuOpen"
+            title="Auto-Scaling">📈 Auto-Scale<span class="autoscale-label">: {{ autoScaleStrategyLabel }}</span></button>
+          <Transition name="spanel">
+            <div v-if="autoScaleMenuOpen" class="autoscale-panel">
+              <div class="sp-title">
+                Auto-Scaling
+                <button class="sp-close" @click="autoScaleMenuOpen = false">×</button>
+              </div>
+              <div class="autoscale-strategy-pills">
+                <button
+                  v-for="opt in ['queue', 'load', 'latency', 'hybrid']"
+                  :key="opt"
+                  class="mpill"
+                  :class="{ active: autoScaleStrategy === opt }"
+                  @click="autoScaleStrategy = opt">
+                  {{ opt === 'queue' ? 'Queue' : opt === 'load' ? 'Load' : opt === 'latency' ? 'Latency' : 'Hybrid' }}
+                </button>
+              </div>
+              <p v-if="autoScaleStrategy === 'queue'" class="autoscale-hint">Skaliert nach Nachrichten in der Queue.</p>
+              <p v-else-if="autoScaleStrategy === 'load'" class="autoscale-hint">Skaliert nach durchschnittlicher Auslastung (Ziel).</p>
+              <p v-else-if="autoScaleStrategy === 'latency'" class="autoscale-hint">Skaliert nach Latenz (Wartezeit in der Queue).</p>
+              <p v-else class="autoscale-hint">Scale-up wenn Queue ODER Latenz Schwellen überschreiten.</p>
+              <div class="sp-sep"></div>
+              <!-- Queue thresholds -->
+              <template v-if="autoScaleStrategy === 'queue' || autoScaleStrategy === 'hybrid'">
+                <div class="sp-row">
+                  <span class="sp-label">Scale-up ab Queue</span>
+                  <input type="range" min="1" max="10" v-model.number="queueScaleUp" class="sp-slider" />
+                  <span class="sp-val">{{ queueScaleUp }}</span>
+                </div>
+                <div class="sp-row">
+                  <span class="sp-label">Scale-down unter Queue</span>
+                  <input type="range" min="0" max="5" v-model.number="queueScaleDown" class="sp-slider" />
+                  <span class="sp-val">{{ queueScaleDown }}</span>
+                </div>
+                <div v-if="autoScaleStrategy === 'hybrid'" class="sp-sep"></div>
+              </template>
+              <!-- Load thresholds -->
+              <template v-if="autoScaleStrategy === 'load'">
+                <div class="sp-row">
+                  <span class="sp-label">Ziel Load</span>
+                  <input type="range" min="40" max="95" v-model.number="loadTargetPct" class="sp-slider" />
+                  <span class="sp-val">{{ loadTargetPct }}%</span>
+                </div>
+                <div class="sp-row">
+                  <span class="sp-label">Scale-up ab</span>
+                  <input type="range" min="50" max="98" v-model.number="loadScaleUpPct" class="sp-slider" />
+                  <span class="sp-val">{{ loadScaleUpPct }}%</span>
+                </div>
+                <div class="sp-row">
+                  <span class="sp-label">Scale-down unter</span>
+                  <input type="range" min="5" max="50" v-model.number="loadScaleDownPct" class="sp-slider" />
+                  <span class="sp-val">{{ loadScaleDownPct }}%</span>
+                </div>
+              </template>
+              <!-- Latency thresholds (also for hybrid) -->
+              <template v-if="autoScaleStrategy === 'latency' || autoScaleStrategy === 'hybrid'">
+                <div class="sp-row">
+                  <span class="sp-label">Scale-up ab Latency</span>
+                  <input type="range" min="200" max="800" step="50" v-model.number="latencyScaleUpMs" class="sp-slider" />
+                  <span class="sp-val">{{ latencyScaleUpMs }} ms</span>
+                </div>
+                <div class="sp-row">
+                  <span class="sp-label">Scale-down unter Latency</span>
+                  <input type="range" min="100" max="400" step="50" v-model.number="latencyScaleDownMs" class="sp-slider" />
+                  <span class="sp-val">{{ latencyScaleDownMs }} ms</span>
+                </div>
+              </template>
+            </div>
+          </Transition>
+        </div>
       </div>
 
       <!-- Settings gear -->
@@ -715,6 +835,58 @@ onUnmounted(() => {
 .settings-btn.active {
   border-color: var(--accent-cyan, #028090);
   color: var(--accent-cyan, #028090);
+}
+
+/* ── Auto-Scaling menu (Mode 4) ──────────────────────────────────────────────── */
+.autoscale-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.autoscale-btn {
+  background: var(--slide-bg-card, white);
+  border: 1.5px solid var(--slide-border, #CBD5E1);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--slide-fg, #1A2B3C);
+  transition: border-color 0.18s, color 0.18s;
+}
+.autoscale-btn:hover,
+.autoscale-btn.active {
+  border-color: var(--accent-cyan, #028090);
+  color: var(--accent-cyan, #028090);
+}
+.autoscale-label {
+  font-size: 9.5px;
+  color: var(--slide-muted, #64748B);
+  font-weight: normal;
+}
+.autoscale-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 5px);
+  z-index: 30;
+  background: var(--slide-bg-card, #ffffff);
+  border: 1px solid var(--slide-border, #E2E8F0);
+  border-radius: 8px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  min-width: 260px;
+  font-size: 10px;
+}
+.autoscale-strategy-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.autoscale-hint {
+  font-size: 9px;
+  color: var(--slide-muted, #64748B);
+  margin: 0 0 6px;
+  line-height: 1.35;
 }
 
 /* ── Settings panel ──────────────────────────────────────────────────────────── */
