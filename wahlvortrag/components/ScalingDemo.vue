@@ -12,7 +12,7 @@ const WRK_X = 590
 
 // ── Labels ────────────────────────────────────────────────────────────────────
 const VLABELS    = ['small', 'medium', 'large', 'x-large']
-const VCOSTS     = [0.50, 2.00, 8.00, 32.00]
+const VCOSTS     = [1.00, 2.00, 4.00, 8.00]
 const VRATE_MULT = [1, 2, 4, 8]   // multipliers relative to baseRate
 const MTITLES    = [
   'Direct Connection — No Broker',
@@ -224,6 +224,11 @@ function fireOneCamera() {
       cameraFiring[idx] = true
       setTimeout(() => { cameraFiring[idx] = false }, FIRE_ANIM_MS)
     }
+    const wouldBe = queueLength.value + 1
+    const newQueue = Math.min(20, wouldBe)
+    const lost = wouldBe - newQueue
+    if (lost > 0) messagesLost.value = messagesLost.value + lost
+    queueLength.value = newQueue
   } finally {
     if (!cameraFireStopped) {
       cameraFireTimeout = setTimeout(fireOneCamera, getFireDelay())
@@ -278,10 +283,8 @@ function runKEDA() {
 
 // ── Tick ──────────────────────────────────────────────────────────────────────
 function tick() {
-  const inc     = incomingRate.value   * 0.2
   const proc    = processingRate.value * 0.2
-  const wouldBe = queueLength.value + inc - proc
-  if (wouldBe > 20) messagesLost.value += Math.round(wouldBe - 20)
+  const wouldBe = queueLength.value - proc
   queueLength.value = Math.max(0, Math.min(20, wouldBe))
   if (mode.value === 4) runKEDA()
   spawnBrokerPackets()
