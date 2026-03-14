@@ -55,6 +55,7 @@ const ratePerCamera  = ref(0.5)   // req/s per camera (default ½/s)
 const baseRate       = ref(1.0)   // processing fps for small instance
 const randomizer     = ref(0)     // 0 = deterministic, 1 = chaotic
 const showAnimations = ref(true)  // camera flash + dashed connectors
+const startupTimeMs  = ref(1000)  // Pod startup delay (ms) until status 'active'
 
 // ── Auto-Scaling (Mode 4) ──────────────────────────────────────────────────────
 const autoScaleStrategy  = ref('queue')   // 'queue' | 'load' | 'latency' | 'hybrid'
@@ -301,7 +302,7 @@ function runKEDA() {
   const activeCount = autoWorkers.value.filter(w => w.status === 'active').length
 
   autoWorkers.value.forEach(w => {
-    if (w.status === 'starting' && now - w.addedAt >= 3000) w.status = 'active'
+    if (w.status === 'starting' && now - w.addedAt >= startupTimeMs.value) w.status = 'active'
   })
   autoWorkers.value = autoWorkers.value.filter(w =>
     !(w.status === 'stopping' && now - w.stoppedAt >= 400)
@@ -527,6 +528,13 @@ onUnmounted(() => {
               <input type="range" min="0.5" max="6" step="0.5"
                      v-model.number="baseRate" class="sp-slider" />
               <span class="sp-val">{{ baseRate.toFixed(1) }}/s</span>
+            </div>
+
+            <div class="sp-row">
+              <span class="sp-label">Startup-Time</span>
+              <input type="range" min="500" max="8000" step="500"
+                     v-model.number="startupTimeMs" class="sp-slider" />
+              <span class="sp-val">{{ (startupTimeMs / 1000).toFixed(1) }} s</span>
             </div>
 
             <div class="sp-sep"></div>
