@@ -66,26 +66,22 @@ layout: default-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: demo
 ---
 
-<!-- SLIDE 3 — DEMO TIME -->
+<!-- SLIDE 3 — DEMO -->
 
-<div class="slide-header">
-  <span class="accent-pink">#</span> Demo Time!
+<div class="slide-header" style="margin-bottom:0.3rem;">
+  <span class="accent-pink">#</span> Bestellt eure Pizza!
 </div>
 
-<div style="text-align:center;margin-top:1rem;">
-  <div style="font-size:1.4rem;font-weight:bold;" class="accent-cyan">Bestellt eure Pizza!</div>
-  <a href="https://event-sourcing-d2lk.onrender.com/projector" target="_blank" class="muted" style="font-size:0.65rem;">
-    event-sourcing-d2lk.onrender.com/projector
-  </a>
+<div style="overflow:hidden;border-radius:8px;height:420px;width:100%;">
+  <iframe
+    src="https://event-sourcing-d2lk.onrender.com/projector"
+    style="width:142.86%;height:142.86%;max-width:none;border:none;display:block;transform:scale(0.7);transform-origin:top left;"
+    allow="camera;microphone"
+  />
 </div>
-
-<iframe
-  src="https://event-sourcing-d2lk.onrender.com/projector"
-  style="width:100%;height:340px;border:none;border-radius:8px;margin-top:0.5rem;"
-  allow="camera;microphone"
-/>
 
 ---
 layout: default-with-footer
@@ -141,19 +137,17 @@ layout: default-with-footer
 
 <!-- SLIDE 5 — DEMO: EVENT SOURCING AKTIVIEREN -->
 
-<div class="slide-header">
+<div class="slide-header" style="margin-bottom:0.3rem;">
   <span class="accent-pink">#</span> Demo: Event Sourcing aktivieren
 </div>
 
-<div style="text-align:center;margin-top:0.5rem;">
-  <div style="font-size:1rem;" class="accent-green">Log einblenden · Personen einblenden · Replay</div>
+<div style="overflow:hidden;border-radius:8px;height:430px;width:100%;">
+  <iframe
+    src="https://event-sourcing-d2lk.onrender.com/projector"
+    style="width:166.67%;height:166.67%;max-width:none;border:none;display:block;transform:scale(0.6);transform-origin:top left;"
+    allow="camera;microphone"
+  />
 </div>
-
-<iframe
-  src="https://event-sourcing-d2lk.onrender.com/projector"
-  style="width:100%;height:360px;border:none;border-radius:8px;margin-top:0.4rem;"
-  allow="camera;microphone"
-/>
 
 ---
 layout: default-with-footer
