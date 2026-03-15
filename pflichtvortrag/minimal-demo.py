@@ -16,28 +16,35 @@ def place_order(user, item):
 def cancel_order(user, item):
     event_store.append(Event("item_removed", {"user": user, "item": item}))
 
-def get_orders():
-    orders = {}
-    for e in event_store:
-        u = e.data["user"]
-        if e.type == "item_added":   orders.setdefault(u, []).append(e.data["item"])
-        if e.type == "item_removed": orders[u].remove(e.data["item"])
+def _apply(orders, event, warn_prefix="", print_event=False):
+    item, user = event.data["item"], event.data["user"]
+    if event.type == "item_added": orders.setdefault(item, []).append(user)
+    elif event.type == "item_removed":
+        if item in orders and user in orders[item]: orders[item].remove(user)
+        elif print_event: print(f"{warn_prefix}⚠️  WARNUNG: '{user}' hat '{item}' nicht bestellt – Event ignoriert")
     return orders
 
-def replay():
+def get_orders(replay_mode=False):
     orders = {}
-    for e in event_store:
-        u = e.data["user"]
-        if e.type == "item_added":   orders.setdefault(u, []).append(e.data["item"])
-        if e.type == "item_removed": orders[u].remove(e.data["item"])
-        print(f"  [{e.ts}] {e.type:14}  {u:6} · {e.data['item']:12}  →  {dict(orders)}")
-        time.sleep(0.6)
+    prefix = "  " if replay_mode else ""
+    for event in event_store:
+        _apply(orders, event, warn_prefix=prefix, print_event=replay_mode)
+        if replay_mode:
+            print(f"  [{event.ts}] {event.type:14}  {event.data['user']:6} · {event.data['item']:12}  →  {dict(orders)}")
+            time.sleep(0.6)
+    return {item: users for item, users in orders.items() if users}
 
-# --- Live ---
-# place_order("Anna", "Margherita")
-# place_order("Ben", "Salami")
-# cancel_order("Ben", "Salami")
-# place_order("Ben", "Funghi")
-# event_store
-# get_orders()
-# replay()
+if __name__ == "__main__":
+    place_order("Anna", "Margherita")
+    place_order("Ben", "Salami")
+    cancel_order("Ben", "Salami")
+    place_order("Ben", "Funghi")
+    cancel_order("Ben", "Salami")   # Typo: schon storniert
+    
+    print("\nBestellungen:")
+    print(get_orders())
+    
+    print("\nReplay:")
+    get_orders(replay_mode=True)
+
+    print("\n")
