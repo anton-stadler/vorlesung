@@ -96,6 +96,43 @@ routeAlias: demo
 layout: default-with-footer
 ---
 
+<!-- TRADEOFF SLIDE -->
+
+<div class="slide-header"><span class="accent-pink">#</span> Scale smart — three competing forces.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
+
+  <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">🛡</div>
+    <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.1rem;text-align:center;">Reliability</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">No message loss.<br>Every alarm must arrive.</div>
+  </div>
+
+  <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">⚡</div>
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet SLAs.<br>Process fast, not slow.</div>
+  </div>
+
+  <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">💰</div>
+    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
+  </div>
+
+</div>
+
+<div class="problem-insight" style="margin-top:0.8rem;">
+  <span class="accent-comment">»</span>
+  Too many workers → <span class="accent-orange">cost explodes.</span>
+  Too few → <span class="accent-red">alarms are lost or slow.</span>
+  <span class="accent-comment">«</span>
+</div>
+
+---
+layout: default-with-footer
+---
+
 <!-- SLIDE 3 — MESSAGE BROKER -->
 
 <div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Producers &amp; Consumers</div>
@@ -185,69 +222,83 @@ layout: default-with-footer
 </div>
 
 ---
-layout: two-cols-header-with-footer
+layout: default-with-footer
 ---
 
 <!-- SLIDE 5 — AUTOSCALING -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Scale smart, not hard.</div>
+<div class="slide-header"><span class="accent-pink">#</span> Autoscaling — let metrics decide.</div>
 
-::left::
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
 
-<div class="examples-label accent-purple" style="font-size:0.78rem;">Requirements</div>
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
-  <li><strong>Stateless</strong> — No shared state between pods.</li>
-  <li><strong>Decoupling</strong> — Broker decouples producers and consumers.</li>
-  <li><strong>Observability</strong> — Metrics available (queue, CPU, latency) and fast pod startup.</li>
-</ul>
-<div class="examples-label accent-purple" style="font-size:0.78rem;margin-top:1rem;">Tradeoff</div>
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
-  <li><strong>Reliability</strong> — No message loss, delivery guarantees.</li>
-  <li><strong>Cost</strong> — Keep resource spend low.</li>
-  <li><strong>Latency</strong> — Meet SLAs, low wait times.</li>
-</ul>
+  <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">📬</div>
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">Queue</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">KEDA</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when the queue grows.<br>
+      Scale in when it empties.<br><br>
+      <span style="color:var(--accent-cyan,#38bdf8);">→ Best for bursty workloads.</span>
+    </div>
+  </div>
 
-::right::
+  <div style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">🔥</div>
+    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">Load / CPU</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">HPA</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when workers are hot.<br>
+      Scale in when utilization drops.<br><br>
+      <span style="color:var(--accent-orange,#fb923c);">→ Best for CPU-bound tasks.</span>
+    </div>
+  </div>
 
-<div class="examples-label accent-cyan" style="font-size:0.78rem;margin-bottom:0.35rem;">Autoscaling metrics</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 0.5rem;margin-bottom:0.35rem;">
-  <div class="metric-box" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.78rem;">Queue</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by messages in queue (KEDA).</div>
+  <div style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">⏱</div>
+    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">SLA-driven</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when wait time exceeds SLA.<br>
+      Scale in when latency relaxes.<br><br>
+      <span style="color:var(--accent-purple,#bd93f9);">→ Best for time-critical systems.</span>
+    </div>
   </div>
-  <div class="metric-box" style="border:1px solid var(--accent-orange,#fb923c);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.78rem;">Load / CPU</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by worker utilization (HPA).</div>
-  </div>
-  <div class="metric-box" style="border:1px solid var(--accent-purple,#bd93f9);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.78rem;">Latency</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by queue wait time (SLA).</div>
-  </div>
-  <div class="metric-box" style="border:1px solid var(--accent-green,#16a34a);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:0.78rem;">Hybrid</div>
-    <div class="muted" style="font-size:0.7rem;">Scale up when queue <strong>or</strong> latency exceeded; down when both relaxed.</div>
-  </div>
+
 </div>
-<div class="muted" style="font-size:0.68rem;">… and many more options (custom metrics, Prometheus, etc.).</div>
 
-::bottom::
+<div class="problem-insight" style="margin-top:0.8rem;">
+  <span class="accent-comment">»</span>
+  The broker decouples senders from workers —
+  metrics tell <span class="accent-cyan">when</span> to scale, platform handles <span class="accent-orange">how.</span>
+  <span class="accent-comment">«</span>
+</div>
 
-<div style="display:flex;align-items:center;gap:1.2rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    The broker enables autoscaling — it decouples senders and workers.<br>
-    Metrics (queue, load, latency, …) tell when to scale.
-    <span class="accent-comment">«</span>
+---
+layout: default
+---
+
+<!-- SLIDE — THANKS -->
+
+<div class="cover-wrap">
+  <h1 class="cover-title" style="font-size:2.2rem;">Thank you for your<br>
+    <span class="accent-cyan">attention!</span>
+  </h1>
+  <div class="cover-meta" style="margin-top:1.5rem;">
+    <div class="cover-author">Dr.-Ing. Anton Stadler</div>
   </div>
 </div>
 
 ---
-layout: default-with-footer
+layout: default
+backup: true
 ---
 
-<!-- SLIDE 6 — INDUSTRY STANDARDS -->
+<!-- BACKUP — INDUSTRY STANDARDS -->
 
-<div class="slide-header"><span class="accent-cyan">#</span> Further thoughts &amp; industry standards.</div>
+<div class="slide-header">
+  <span class="accent-cyan">#</span> Further thoughts &amp; industry standards.
+  <span class="muted text-sm" style="font-size:0.65em; margin-left:0.5rem;">BACKUP</span>
+</div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:0.6rem;">
 

@@ -79,8 +79,7 @@ const autoScaleStrategyLabel = computed(() => {
   const s = autoScaleStrategy.value
   if (s === 'queue') return 'Queue'
   if (s === 'load') return `Load (${loadTargetPct.value}%)`
-  if (s === 'latency') return 'Latency'
-  return 'Hybrid'
+  return 'Latency'
 })
 
 const randomizerLabel = computed(() => {
@@ -328,9 +327,6 @@ function runKEDA() {
   } else if (strategy === 'latency') {
     shouldScaleUp = lat != null && lat > latencyScaleOutMs.value
     shouldScaleDown = lat != null && lat < latencyScaleInMs.value
-  } else if (strategy === 'hybrid') {
-    shouldScaleUp = q > queueScaleUp.value || (lat != null && lat > latencyScaleOutMs.value)
-    shouldScaleDown = q < queueScaleDown.value && (lat == null || lat < latencyScaleInMs.value)
   }
 
   if (shouldScaleUp && nonStopping < 16 && scaleUpCD <= 0) {
@@ -497,22 +493,21 @@ onUnmounted(() => {
               </div>
               <div class="autoscale-strategy-pills" @click.stop>
                 <button
-                  v-for="opt in ['queue', 'load', 'latency', 'hybrid']"
+                  v-for="opt in ['queue', 'load', 'latency']"
                   :key="opt"
                   type="button"
                   class="mpill"
                   :class="{ active: autoScaleStrategy === opt }"
                   @click.stop="autoScaleStrategy = opt">
-                  {{ opt === 'queue' ? 'Queue' : opt === 'load' ? 'Load' : opt === 'latency' ? 'Latency' : 'Hybrid' }}
+                  {{ opt === 'queue' ? 'Queue' : opt === 'load' ? 'Load' : 'Latency' }}
                 </button>
               </div>
               <p v-if="autoScaleStrategy === 'queue'" class="autoscale-hint">Scale by messages in queue.</p>
               <p v-else-if="autoScaleStrategy === 'load'" class="autoscale-hint">Scale by average load (target).</p>
-              <p v-else-if="autoScaleStrategy === 'latency'" class="autoscale-hint">Scale by latency (wait time in queue).</p>
-              <p v-else class="autoscale-hint">Scale up when queue OR latency thresholds are exceeded.</p>
+              <p v-else class="autoscale-hint">Scale by latency (wait time in queue).</p>
               <div class="sp-sep"></div>
               <!-- Queue thresholds -->
-              <template v-if="autoScaleStrategy === 'queue' || autoScaleStrategy === 'hybrid'">
+              <template v-if="autoScaleStrategy === 'queue'">
                 <div class="sp-row">
                   <span class="sp-label">Scale out from queue</span>
                   <input type="range" min="1" max="10" v-model.number="queueScaleUp" class="sp-slider" />
@@ -523,7 +518,6 @@ onUnmounted(() => {
                   <input type="range" min="0" max="5" v-model.number="queueScaleDown" class="sp-slider" />
                   <span class="sp-val">{{ queueScaleDown }}</span>
                 </div>
-                <div v-if="autoScaleStrategy === 'hybrid'" class="sp-sep"></div>
               </template>
               <!-- Load thresholds -->
               <template v-if="autoScaleStrategy === 'load'">
@@ -543,8 +537,8 @@ onUnmounted(() => {
                   <span class="sp-val">{{ loadScaleDownPct }}%</span>
                 </div>
               </template>
-              <!-- Latency thresholds (also for hybrid) -->
-              <template v-if="autoScaleStrategy === 'latency' || autoScaleStrategy === 'hybrid'">
+              <!-- Latency thresholds -->
+              <template v-if="autoScaleStrategy === 'latency'">
                 <div class="sp-row">
                   <span class="sp-label">Scale out from latency</span>
                   <input type="range" min="200" max="800" step="50" v-model.number="latencyScaleOutMs" class="sp-slider" />
