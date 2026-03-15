@@ -1,3 +1,5 @@
+import code
+import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -34,17 +36,20 @@ def get_orders(replay_mode=False):
             time.sleep(0.6)
     return {item: users for item, users in orders.items() if users}
 
-if __name__ == "__main__":
+def _run_demo():
     place_order("Anna", "Margherita")
     place_order("Ben", "Salami")
     cancel_order("Ben", "Salami")
     place_order("Ben", "Funghi")
     cancel_order("Ben", "Salami")   # Typo: schon storniert
-    
-    print("\nBestellungen:")
-    print(get_orders())
-    
+    print("\nBestellungen:", get_orders())
     print("\nReplay:")
     get_orders(replay_mode=True)
 
-    print("\n")
+if __name__ == "__main__":
+    interactive = "--interactive" in sys.argv or "-i" in sys.argv
+    if interactive:
+        print("\nInteraktiv (event_store, place_order, cancel_order, get_orders). exit() zum Beenden.")
+        code.interact(local=locals())
+    else:
+        _run_demo()
