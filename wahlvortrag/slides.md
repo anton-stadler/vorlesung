@@ -1,6 +1,6 @@
 ---
 theme: default
-title: "Scalable Systems via Message-Based Architecture"
+title: "Scalable Systems with Event-Driven Architecture"
 highlighter: shiki
 lineNumbers: false
 colorSchema: auto
@@ -14,27 +14,16 @@ addons:
 
 <!-- SLIDE 1 — COVER -->
 <div class="cover-wrap">
-  <div class="cover-tag">Trial Lecture · TH Rosenheim · 20.03.2026</div>
-
   <h1 class="cover-title">
     Scalable Systems<br>
-    <span class="accent-cyan">via Message-Based Architecture</span>
+    <span class="accent-cyan">with Event-Driven Architecture</span>
   </h1>
 
   <div class="cover-meta">
     <div class="cover-author">Dr.-Ing. Anton Stadler</div>
-    <div class="cover-org muted">Keenfinity GmbH · Bosch spin-off</div>
-  </div>
-
-  <div class="cover-footer">
-    <span class="badge badge-purple">Master Computer Science</span>
-    <span class="badge badge-cyan">Applied AI</span>
-    <span class="badge badge-blue">Distributed Systems</span>
-    <span class="badge badge-pink">Cloud Computing</span>
-  </div>
-
-  <div class="cover-institution muted">
-    Rosenheim University of Applied Sciences · Faculty of Computer Science
+    <div class="cover-footer">
+      <span class="badge badge-cyan">Keenfinity GmbH · Bosch spin-off</span>
+    </div>
   </div>
 </div>
 
@@ -117,7 +106,7 @@ layout: two-cols-header-with-footer
 
 <ul class="cross-list" style="font-size:0.78rem;">
   <li>Producer knows consumer's address</li>
-  <li>Worker crash → alarm loss</li>
+  <li>Worker crash or overload → alarm loss</li>
   <li>New worker → reconfigure all cameras</li>
 </ul>
 
@@ -183,17 +172,13 @@ layout: two-cols-header-with-footer
 
 ::bottom::
 
-<div style="margin-bottom:0.4rem;">
+<div style="margin-top:-1.2rem;">
   <DroneScalingSvg />
 </div>
-
-<div style="display:flex;align-items:flex-end;gap:1.2rem;">
+<div style="display:flex;align-items:flex-end;gap:1.2rem;margin-top:0.3rem;">
   <div class="problem-insight" style="margin:0;flex:1;">
     <span class="accent-comment">»</span>
-    <strong>Software analogy:</strong>
-    Drone = worker pod · Rocket = high-performance server.
-    The swarm scales <span class="accent-cyan">horizontally</span> —
-    and only works with <span class="accent-orange">decoupling via a message broker.</span>
+    Drone = worker pod, Rocket = big server. Swarm scales <span class="accent-cyan">horizontally</span> — needs <span class="accent-orange">message broker.</span>
     <span class="accent-comment">«</span>
   </div>
 </div>
@@ -216,7 +201,7 @@ layout: two-cols-header-with-footer
 </ul>
 <div class="examples-label accent-purple" style="font-size:0.78rem;margin-top:1rem;">Tradeoff</div>
 <ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
-  <li><strong>Availability</strong> — High uptime, few outages.</li>
+  <li><strong>Reliability</strong> — No message loss, delivery guarantees.</li>
   <li><strong>Cost</strong> — Keep resource spend low.</li>
   <li><strong>Latency</strong> — Meet SLAs, low wait times.</li>
 </ul>

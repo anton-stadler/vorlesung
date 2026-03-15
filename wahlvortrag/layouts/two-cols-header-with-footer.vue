@@ -69,7 +69,8 @@ const props = defineProps({
 
 .col-bottom {
   align-self: end;
-  grid-area: 3 / 1 / 3 / 3;
+  grid-area: 3 / 1 / 4 / 3;
+  margin-bottom: 0.3rem;
 }
 
 /* „Demo“ am rechten Rand, 90° gedreht, stört den Inhalt nicht */

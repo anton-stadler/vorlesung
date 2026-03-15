@@ -4,9 +4,9 @@ const { currentPage, total } = useNav()
 </script>
 
 <template>
-  <div class="global-footer" role="contentinfo" aria-label="Footer: Message-Based Architecture, TH Rosenheim, page number">
+  <div class="global-footer" role="contentinfo" aria-label="Footer: Anton Stadler - Event-Driven Architecture, 2026-03-20, page number">
     <span class="footer-slash">//</span>
-    Message-Based Architecture · TH Rosenheim · 2026
+    Anton Stadler | Event-Driven Architecture | 2026-03-20
     <span class="footer-spacer" />
     <span class="footer-num">{{ String(currentPage).padStart(2, '0') }}</span>
     <span class="footer-sep"> / </span>

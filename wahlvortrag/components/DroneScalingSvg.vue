@@ -117,7 +117,7 @@
 .scale-badges {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: -0.25rem;
   flex-wrap: wrap;
   justify-content: center;
 }
