@@ -27,3 +27,4 @@ Thumbs.db
 
 # Optional: Build-Output falls im Root
 dist/
+.playwright-mcp/
