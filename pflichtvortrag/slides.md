@@ -2,6 +2,10 @@
 theme: default
 title: Event Sourcing als Architektur-Pattern mit Python
 highlighter: shiki
+shiki:
+  themes:
+    light: github-light
+    dark: dracula
 lineNumbers: false
 colorSchema: auto
 fonts:
@@ -113,11 +117,10 @@ layout: default-with-footer
     </div>
     <ul style="list-style:none;padding:0;margin:0;font-size:0.75rem;line-height:1.7;">
       <li><span class="accent-cyan">14:01</span> · Anna bestellt Margherita</li>
-      <li><span class="accent-cyan">14:02</span> · Ben bestellt Salami</li>
-      <li><span class="accent-orange">14:03</span> · Ben ändert → Hawaii</li>
+      <li><span class="accent-cyan">14:02</span> · Ben bestellt Flötzinger</li>
+      <li><span class="accent-red">14:03</span> · Ben storniert Flötzinger</li>
       <li><span class="accent-red">14:05</span> · Pizzeria 1 hat Ruhetag</li>
-      <li><span class="accent-red">14:06</span> · Ben storniert Hawaii (gibt's nicht)</li>
-      <li><span class="accent-cyan">14:06</span> · Ben bestellt Funghi</li>
+      <li><span class="accent-cyan">14:06</span> · Ben bestellt Auer</li>
       <li><span class="accent-green">14:08</span> · Bestellung abgeschickt</li>
     </ul>
   </div>
@@ -131,22 +134,8 @@ layout: default-with-footer
   <span class="accent-comment">«</span>
 </div>
 
----
-layout: default-with-footer
----
-
-<!-- SLIDE 5 — DEMO: EVENT SOURCING AKTIVIEREN -->
-
-<div class="slide-header" style="margin-bottom:0.3rem;">
-  <span class="accent-pink">#</span> Demo: Event Sourcing aktivieren
-</div>
-
-<div style="overflow:hidden;border-radius:8px;height:430px;width:100%;">
-  <iframe
-    src="https://event-sourcing-d2lk.onrender.com/projector"
-    style="width:166.67%;height:166.67%;max-width:none;border:none;display:block;transform:scale(0.6);transform-origin:top left;"
-    allow="camera;microphone"
-  />
+<div style="display:flex;justify-content:flex-end;margin-top:0.8rem;">
+  <DemoLink />
 </div>
 
 ---
@@ -160,32 +149,10 @@ layout: default-with-footer
 </div>
 
 <div class="scenario-label">
-  <span class="accent-comment">// Minimalbeispiel:</span> <span class="accent-cyan">Append-only Event Store</span>
+  <span class="accent-comment">// Code:</span> <span class="accent-cyan">pflichtvortrag/minimal-demo.py</span>
 </div>
 
-```python {lines:false}
-@dataclass
-class Event:
-    type: str
-    data: dict
-    timestamp: datetime = field(default_factory=datetime.now)
-
-event_store: list[Event] = []                    # Append-only!
-
-def place_order(user: str, item: str):
-    event_store.append(Event("item_added", {"user": user, "item": item}))
-
-def cancel_order(user: str, item: str):
-    event_store.append(Event("item_removed", {"user": user, "item": item}))
-
-def get_current_orders() -> dict[str, list[str]]:  # Replay!
-    orders = {}
-    for e in event_store:
-        u = e.data["user"]
-        if e.type == "item_added":    orders.setdefault(u, []).append(e.data["item"])
-        if e.type == "item_removed":  orders.get(u, []).remove(e.data["item"])
-    return orders  # State aus Events berechnet — nie direkt gespeichert
-```
+<<< @/minimal-demo.py{python}{maxHeight:'370px'}
 
 ---
 layout: two-cols-header-with-footer
