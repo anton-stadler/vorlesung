@@ -44,19 +44,31 @@ showDemo: false
 
 ::right::
 
+<div class="scenario-label">
+  <span class="accent-comment">// Strategy:</span>
+  <span class="accent-cyan"> Hybrid Edge–Cloud AI</span>
+</div>
 <div class="example-item" style="margin-top:0.9rem;">
   <span class="example-icon badge-role badge-role-edge">Edge</span>
   <div style="text-align:left;">
-    <div class="example-name">Small CNN · &lt; 50 ms · detects "fire possible"</div>
-    <div class="example-desc muted">Sends only a compact image — no stream</div>
+    <div class="example-name">Small CNN model on the camera</div>
+    <div class="example-desc muted">Real-time inference &lt; 50 ms · detects "fire possible"</div>
+    <div class="example-desc muted">Only a compact image is sent — no stream</div>
   </div>
 </div>
 <div class="example-item" style="margin-top:0.5rem;">
   <span class="example-icon badge-role badge-role-cloud">Cloud</span>
   <div style="text-align:left;">
-    <div class="example-name">High-end model · &lt; 2 s · lower false-alarm rate</div>
+    <div class="example-name">High-end model in the cloud</div>
+    <div class="example-desc muted">Latency &lt; 2 s allowed · lower false-alarm rate</div>
     <div class="example-desc muted">Returns a confidence score</div>
   </div>
+</div>
+<div class="problem-insight" style="margin-top:0.8rem;font-size:0.78rem;">
+  <span class="accent-comment">»</span>
+  Why hybrid? Real-time needs a <span class="accent-cyan">small model locally</span> —
+  precision needs a <span class="accent-purple">large model in the cloud.</span>
+  <span class="accent-comment">«</span>
 </div>
 
 ::bottom::
@@ -81,94 +93,95 @@ routeAlias: demo
 </div>
 
 ---
-layout: two-cols-header-with-footer
+layout: default-with-footer
 ---
 
 <!-- SLIDE 3 — MESSAGE BROKER -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Message Broker: The Decoupling Pattern</div>
+<div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Producers &amp; Consumers</div>
 
-::left::
+<div style="display:grid;grid-template-rows:auto 1fr;gap:0.8rem;flex:1;min-height:0;">
 
-<div class="col-title" style="color:var(--accent-red,#f87171);">⚡ Without Broker — Tight Coupling</div>
-
-<ul class="cross-list" style="font-size:0.78rem;">
-  <li>Producer knows consumer's address</li>
-  <li>Worker crash or overload → alarm loss</li>
-  <li>New worker → reconfigure all cameras</li>
-</ul>
-
-::right::
-
-<div class="col-title" style="color:var(--accent-green,#4ade80);">✔ With Broker — Space · Time · Count</div>
-
-<ul class="check-list" style="font-size:0.78rem;">
-  <li><strong>Space:</strong> Producer does not know consumer address</li>
-  <li><strong>Time:</strong> Consumer can be offline — messages wait</li>
-  <li><strong>Count:</strong> Scale workers without camera changes</li>
-</ul>
-
-::bottom::
-
-<div style="margin-bottom:0.5rem;">
-  <BrokerDiagramSvg />
-</div>
-
-<div style="display:flex;align-items:center;gap:1.2rem;margin-top:0.4rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    The broker is not a bottleneck — it is the
-    <span class="accent-orange">decoupling point</span>
-    that makes horizontal scaling <span class="accent-green">possible in the first place.</span>
-    <span class="accent-comment">«</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.05rem;">⚡ Without Broker</div>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Worker down → alarm lost</li>
+        <li>Add worker → reconfigure cameras</li>
+      </ul>
+    </div>
+    <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:1.05rem;">✔ With Broker</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Messages wait if worker is busy</li>
+        <li>Add workers without touching cameras</li>
+      </ul>
+    </div>
   </div>
+
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;">
+    <BrokerDiagramSvg />
+    <div class="problem-insight" style="margin-top:0.4rem;">
+      <span class="accent-comment">»</span>
+      The broker decouples <span class="accent-orange">who sends</span> from <span class="accent-cyan">who processes</span> — enabling horizontal scaling.
+      <span class="accent-comment">«</span>
+    </div>
+  </div>
+
 </div>
 
 ---
-layout: two-cols-header-with-footer
+layout: default-with-footer
 ---
 
 <!-- SLIDE 4 — SCALING: DRONE ANALOGY -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Thought Experiment: One big unit vs. many small ones</div>
+<div class="slide-header"><span class="accent-pink">#</span> One big unit vs. many small ones</div>
 
-::left::
+<div style="display:grid;grid-template-rows:auto 1fr;gap:0.8rem;flex:1;min-height:0;">
 
-<div class="col-title" style="color:var(--accent-orange,#fb923c);">↑ Vertical: Bigger weapon</div>
-
-<ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Physical limits of hardware</li>
-  <li>Single point of failure</li>
-</ul>
-<ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Lower latency — no network between components</li>
-  <li>Simpler programming model — shared memory</li>
-</ul>
-
-::right::
-
-<div class="col-title" style="color:var(--accent-cyan,#38bdf8);">→ Horizontal: Drone swarm</div>
-
-<ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Theoretically unlimited capacity</li>
-  <li>Linear costs — pay per use</li>
-</ul>
-<ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Higher latency — network overhead between nodes</li>
-  <li>More complex — distributed state &amp; coordination</li>
-</ul>
-
-::bottom::
-
-<div style="margin-top:-1.2rem;">
-  <DroneScalingSvg />
-</div>
-<div style="display:flex;align-items:flex-end;gap:1.2rem;margin-top:0.3rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    Drone = worker pod, Rocket = big server. Swarm scales <span class="accent-cyan">horizontally</span> — needs <span class="accent-orange">message broker.</span>
-    <span class="accent-comment">«</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">↑ Vertical Scaling</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Low latency, simple model</li>
+      </ul>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+        <li>Hardware limits</li>
+        <li>Single point of failure</li>
+      </ul>
+    </div>
+    <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">→ Horizontal Scaling</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Unlimited capacity</li>
+        <li>Linear cost — pay per use</li>
+      </ul>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+        <li>Network overhead &amp; coordination</li>
+      </ul>
+    </div>
   </div>
+
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;gap:0.4rem;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:1.5rem;flex:1;min-height:0;">
+      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
+        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale up ↑</span>
+        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale down ↓</span>
+      </div>
+      <img src="/images/Scaling-Options.png" style="max-height:11rem;" />
+      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
+        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale out →</span>
+        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale in ←</span>
+      </div>
+    </div>
+    <div class="problem-insight" style="margin-top:0.2rem;">
+      <span class="accent-comment">»</span>
+      Swarm scales <span class="accent-cyan">horizontally</span> — needs a <span class="accent-orange">message broker.</span>
+      <span class="accent-comment">«</span>
+    </div>
+  </div>
+
 </div>
 
 ---
