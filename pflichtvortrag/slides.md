@@ -168,7 +168,7 @@ layout: two-cols-header-with-footer
 <div class="col-title cross">✗ Wann Overkill</div>
 
 <ul class="cross-list" style="font-size:0.78rem;">
-  <li>Einfache CRUD-Apps ohne Historienrelevanz</li>
+  <li>Einfache Apps ohne Historienrelevanz</li>
   <li>Lesezugriffe dominieren stark</li>
 </ul>
 
@@ -219,7 +219,7 @@ layout: two-cols-header-with-footer
 
 <div class="problem-insight" style="margin:0;">
   <span class="accent-comment">»</span>
-  Event Sourcing ist kein Ersatz für CRUD — es ist ein Werkzeug für Domänen,
+  Event Sourcing ist kein universelles Muster — es ist ein Werkzeug für Domänen,
   in denen die <span class="accent-green">Geschichte den Wert trägt.</span>
   <span class="accent-comment">«</span>
 </div>
