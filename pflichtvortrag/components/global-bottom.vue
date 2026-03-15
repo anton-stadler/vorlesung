@@ -1,6 +1,14 @@
 <script setup>
+import { computed } from 'vue'
 import { useNav } from '@slidev/client'
-const { currentPage, total } = useNav()
+const { currentPage, slides } = useNav()
+
+const mainTotal = computed(() =>
+  slides.value.filter(s => !s.meta?.slide?.frontmatter?.backup).length
+)
+const displayPage = computed(() =>
+  Math.min(currentPage.value, mainTotal.value)
+)
 </script>
 
 <template>
@@ -8,9 +16,9 @@ const { currentPage, total } = useNav()
     <span class="footer-slash">//</span>
     Event Sourcing · TH Rosenheim · 2026
     <span class="footer-spacer" />
-    <span class="footer-num">{{ String(currentPage).padStart(2, '0') }}</span>
+    <span class="footer-num">{{ String(displayPage).padStart(2, '0') }}</span>
     <span class="footer-sep"> / </span>
-    <span class="footer-total">{{ String(total).padStart(2, '0') }}</span>
+    <span class="footer-total">{{ String(mainTotal).padStart(2, '0') }}</span>
   </div>
 </template>
 

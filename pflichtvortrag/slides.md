@@ -39,30 +39,23 @@ layout: default-with-footer
 <!-- SLIDE 2 — DAS PROBLEM -->
 
 <div class="slide-header">
-  <span class="accent-pink">#</span> Das Problem
+  <span class="accent-pink">#</span> Szenario: Pizza-Gruppenbestellung (Chaotisch)
 </div>
 
-<div class="scenario-label">
-  <span class="accent-comment">// Szenario:</span> <span class="accent-cyan">Pizzabestellung in der Gruppe</span>
-</div>
-
-<div style="display:grid;grid-template-columns:1fr 9.5rem;align-items:center;row-gap:0.35rem;font-size:0.8rem;line-height:1.6;margin-top:0.8rem;">
-  <span>▪ Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></span><span class="badge badge-pink" style="white-space:nowrap;text-align:center;">Lost Write</span>
+<div style="display:grid;grid-template-columns:1fr 9.5rem;align-items:center;row-gap:0.45rem;font-size:0.8rem;line-height:1.6;margin-top:1rem;">
+  <span>▪ Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></span><span class="badge badge-cyan" style="white-space:nowrap;text-align:center;">Lost Write</span>
   <span>▪ Alle reden gleichzeitig auf den Besteller ein</span><span class="badge badge-purple" style="white-space:nowrap;text-align:center;">Overload</span>
   <span>▪ Das Kind <span class="accent-red">malt auf dem Zettel herum</span> — teilweise unleserlich</span><span class="badge badge-red" style="white-space:nowrap;text-align:center;">Hackerangriff</span>
-  <span>▪ <span class="accent-red">»Dieses Gericht gibt's nicht mehr«</span> — Bestellung überarbeiten</span><span class="badge badge-pink" style="white-space:nowrap;text-align:center;">Breaking Change</span>
+  <span>▪ <span class="accent-red">»Dieses Gericht gibt's nicht mehr«</span> — Bestellung überarbeiten</span><span class="badge badge-orange" style="white-space:nowrap;text-align:center;">Breaking Change</span>
 </div>
 
-<div class="problem-questions" style="display:flex;gap:0.6rem;margin-top:0.8rem;">
+<div style="display:flex;gap:0.6rem;margin-top:1.2rem;">
   <ProblemBox color="red" icon="!">Eine Pizza zu wenig.</ProblemBox>
-</div>
-
-<div class="problem-questions" style="display:flex;gap:0.6rem;margin-top:0.5rem;">
   <ProblemBox color="yellow">Wer hat was bestellt?</ProblemBox>
   <ProblemBox color="yellow">Was wurde storniert?</ProblemBox>
 </div>
 
-<div class="problem-insight" style="margin-top:0.8rem;">
+<div class="problem-insight" style="margin-top:1rem;">
   <span class="accent-comment">»</span>
   Am Ende kennt der Zettel nur den <span class="accent-orange">letzten Stand</span> —
   die <span class="accent-red">Geschichte ist verloren.</span>
@@ -77,7 +70,7 @@ routeAlias: demo
 <!-- SLIDE 3 — DEMO -->
 
 <div class="slide-header" style="margin-bottom:0.3rem;">
-  <span class="accent-pink">#</span> Alltagsproblem: Pizza-Gruppenbestellung...
+  <span class="accent-pink">#</span> Live-Demo: Pizza-Gruppenbestellung
 </div>
 
 <div style="overflow:hidden;border-radius:8px;height:420px;width:100%;">
@@ -225,10 +218,26 @@ layout: two-cols-header-with-footer
 </div>
 
 ---
-layout: default-with-footer
+layout: default
 ---
 
-<!-- SLIDE 8 — VERTIEFUNG -->
+<!-- SLIDE 8 — THANKS -->
+
+<div class="cover-wrap">
+  <h1 class="cover-title" style="font-size:2.2rem;">Danke für die<br>
+    <span class="accent-cyan">Aufmerksamkeit!</span>
+  </h1>
+  <div class="cover-meta" style="margin-top:1.5rem;">
+    <div class="cover-author">Dr.-Ing. Anton Stadler</div>
+  </div>
+</div>
+
+---
+layout: default
+backup: true
+---
+
+<!-- SLIDE 9 — VERTIEFUNG -->
 
 <div class="slide-header">
   <span class="accent-pink">#</span> Vertiefung &amp; verwandte Konzepte

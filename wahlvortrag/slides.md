@@ -44,31 +44,19 @@ showDemo: false
 
 ::right::
 
-<div class="scenario-label">
-  <span class="accent-comment">// Strategy:</span>
-  <span class="accent-cyan"> Hybrid Edge–Cloud AI</span>
-</div>
 <div class="example-item" style="margin-top:0.9rem;">
   <span class="example-icon badge-role badge-role-edge">Edge</span>
   <div style="text-align:left;">
-    <div class="example-name">Small CNN model on the camera</div>
-    <div class="example-desc muted">Real-time inference &lt; 50 ms · detects "fire possible"</div>
-    <div class="example-desc muted">Only a compact image is sent — no stream</div>
+    <div class="example-name">Small CNN · &lt; 50 ms · detects "fire possible"</div>
+    <div class="example-desc muted">Sends only a compact image — no stream</div>
   </div>
 </div>
 <div class="example-item" style="margin-top:0.5rem;">
   <span class="example-icon badge-role badge-role-cloud">Cloud</span>
   <div style="text-align:left;">
-    <div class="example-name">High-end model in the cloud</div>
-    <div class="example-desc muted">Latency &lt; 2 s allowed · lower false-alarm rate</div>
+    <div class="example-name">High-end model · &lt; 2 s · lower false-alarm rate</div>
     <div class="example-desc muted">Returns a confidence score</div>
   </div>
-</div>
-<div class="problem-insight" style="margin-top:0.8rem;font-size:0.78rem;">
-  <span class="accent-comment">»</span>
-  Why hybrid? Real-time needs a <span class="accent-cyan">small model locally</span> —
-  precision needs a <span class="accent-purple">large model in the cloud.</span>
-  <span class="accent-comment">«</span>
 </div>
 
 ::bottom::

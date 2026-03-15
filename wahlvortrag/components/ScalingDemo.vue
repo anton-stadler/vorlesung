@@ -23,7 +23,7 @@ const MTITLES    = [
 
 // ── Core state ────────────────────────────────────────────────────────────────
 const mode          = ref(1)
-const cameras       = ref(3)
+const cameras       = ref(1)
 const verticalSize  = ref(1)
 const manualWorkers = ref(2)
 const autoWorkers   = ref([{ id: 1, status: 'active', addedAt: 0, load: 0 }])
