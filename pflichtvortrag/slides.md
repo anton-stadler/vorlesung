@@ -76,7 +76,7 @@ routeAlias: demo
 <!-- SLIDE 3 — DEMO -->
 
 <div class="slide-header" style="margin-bottom:0.3rem;">
-  <span class="accent-pink">#</span> Bestellt eure Pizza!
+  <span class="accent-pink">#</span> Alltagsproblem: Pizza-Gruppenbestellung...
 </div>
 
 <div style="overflow:hidden;border-radius:8px;height:420px;width:100%;">
@@ -148,11 +148,11 @@ layout: default-with-footer
   <span class="accent-pink">#</span> Event Sourcing mit Python
 </div>
 
-<div class="scenario-label">
-  <span class="accent-comment">// Code:</span> <span class="accent-cyan">pflichtvortrag/minimal-demo.py</span>
-</div>
+<div style="max-height:410px;overflow-y:auto;border-radius:6px;">
 
-<<< @/minimal-demo.py{python}{maxHeight:'370px'}
+<<< @/minimal-demo.py python
+
+</div>
 
 ---
 layout: two-cols-header-with-footer
