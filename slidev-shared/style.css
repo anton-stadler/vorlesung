@@ -135,6 +135,7 @@ html.dark {
 .badge-cyan   { color: var(--accent-cyan);   border-color: var(--accent-cyan);   }
 .badge-pink   { color: var(--accent-pink);   border-color: var(--accent-pink);   }
 .badge-green  { color: var(--accent-green);  border-color: var(--accent-green);  }
+.badge-red    { color: var(--accent-red);    border-color: var(--accent-red);    }
 
 /* Role-Badges (Edge / Cloud): Light = gefüllt, Dark = dezent mit Rand; gleiche Breite */
 .badge-role {

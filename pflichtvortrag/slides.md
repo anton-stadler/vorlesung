@@ -46,19 +46,20 @@ layout: default-with-footer
   <span class="accent-comment">// Szenario:</span> <span class="accent-cyan">Pizzabestellung in der Gruppe</span>
 </div>
 
-<ul style="font-size:0.82rem;line-height:1.9;margin-top:0.8rem;">
-  <li>Einer läuft mit dem <span class="accent-orange">Zettel</span> rum und sammelt Bestellungen</li>
-  <li>Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></li>
-  <li>Im Hintergrund <span class="accent-purple">quengeln die Kinder</span></li>
-  <li>Anruf: <span class="accent-red">»Ach, ihr habt heute Ruhetag?«</span> — nächste Pizzeria</li>
-  <li><span class="accent-red">»Keine Pizza Parma?«</span> — Bestellung überarbeiten</li>
-  <li>Am Ende: <span class="accent-orange">eine Pizza fehlt.</span></li>
-</ul>
+<div style="display:grid;grid-template-columns:1fr 9.5rem;align-items:center;row-gap:0.35rem;font-size:0.8rem;line-height:1.6;margin-top:0.8rem;">
+  <span>▪ Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></span><span class="badge badge-pink" style="white-space:nowrap;text-align:center;">Lost Write</span>
+  <span>▪ Alle reden gleichzeitig auf den Besteller ein</span><span class="badge badge-purple" style="white-space:nowrap;text-align:center;">Overload</span>
+  <span>▪ Das Kind <span class="accent-red">malt auf dem Zettel herum</span> — teilweise unleserlich</span><span class="badge badge-red" style="white-space:nowrap;text-align:center;">Hackerangriff</span>
+  <span>▪ <span class="accent-red">»Dieses Gericht gibt's nicht mehr«</span> — Bestellung überarbeiten</span><span class="badge badge-pink" style="white-space:nowrap;text-align:center;">Breaking Change</span>
+</div>
 
 <div class="problem-questions" style="display:flex;gap:0.6rem;margin-top:0.8rem;">
-  <ProblemBox>Wer hat was bestellt?</ProblemBox>
-  <ProblemBox>Was wurde storniert?</ProblemBox>
-  <ProblemBox>Warum die falsche Pizza?</ProblemBox>
+  <ProblemBox color="red" icon="!">Eine Pizza zu wenig.</ProblemBox>
+</div>
+
+<div class="problem-questions" style="display:flex;gap:0.6rem;margin-top:0.5rem;">
+  <ProblemBox color="yellow">Wer hat was bestellt?</ProblemBox>
+  <ProblemBox color="yellow">Was wurde storniert?</ProblemBox>
 </div>
 
 <div class="problem-insight" style="margin-top:0.8rem;">
@@ -164,12 +165,30 @@ layout: two-cols-header-with-footer
 
 ::left::
 
+<div class="col-title cross">✗ Wann Overkill</div>
+
+<ul class="cross-list" style="font-size:0.78rem;">
+  <li>Einfache CRUD-Apps ohne Historienrelevanz</li>
+  <li>Lesezugriffe dominieren stark</li>
+</ul>
+
+<div class="examples-label accent-purple">Praxis-Beispiele</div>
+
+<div class="example-item">
+  <span class="example-icon">📝</span>
+  <div>
+    <div class="example-name">Todo-App / Blog</div>
+    <div class="example-desc muted">Kein Audit-Trail nötig — letzter Stand reicht</div>
+  </div>
+</div>
+
+::right::
+
 <div class="col-title check">✓ Wann sinnvoll</div>
 
 <ul class="check-list" style="font-size:0.78rem;">
   <li>Audit-Trail gesetzlich / regulatorisch erforderlich</li>
   <li>Komplexe Domäne mit vielen Zustandsübergängen</li>
-  <li>Time-Travel &amp; Debugging sind geschäftskritisch</li>
 </ul>
 
 <div class="examples-label accent-purple">Praxis-Beispiele</div>
@@ -188,31 +207,11 @@ layout: two-cols-header-with-footer
     <div class="example-desc muted">Lückenlose, unveränderliche Behandlungshistorie</div>
   </div>
 </div>
-
-::right::
-
-<div class="col-title cross">✗ Wann Overkill</div>
-
-<ul class="cross-list" style="font-size:0.78rem;">
-  <li>Einfache CRUD-Apps ohne Historienrelevanz</li>
-  <li>MVP / Prototyp unter Zeitdruck</li>
-  <li>Lesezugriffe dominieren stark</li>
-</ul>
-
-<div class="examples-label accent-purple">Praxis-Beispiele</div>
-
 <div class="example-item">
-  <span class="example-icon">📝</span>
+  <span class="example-icon">🌿</span>
   <div>
-    <div class="example-name">Todo-App / Blog</div>
-    <div class="example-desc muted">Kein Audit-Trail nötig — letzter Stand reicht</div>
-  </div>
-</div>
-<div class="example-item">
-  <span class="example-icon">🚀</span>
-  <div>
-    <div class="example-name">Startup-MVP</div>
-    <div class="example-desc muted">Komplexität tötet Geschwindigkeit in früher Phase</div>
+    <div class="example-name">Git</div>
+    <div class="example-desc muted">Jeder Commit ist ein unveränderliches Event</div>
   </div>
 </div>
 
