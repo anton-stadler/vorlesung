@@ -93,160 +93,259 @@ routeAlias: demo
 </div>
 
 ---
-layout: two-cols-header-with-footer
+layout: default-with-footer
 ---
 
-<!-- SLIDE 3 — MESSAGE BROKER -->
+<!-- TRADEOFF SLIDE -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Message Broker: The Decoupling Pattern</div>
+<div class="slide-header"><span class="accent-pink">#</span> Scale smart — three competing forces.</div>
 
-::left::
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
 
-<div class="col-title" style="color:var(--accent-red,#f87171);">⚡ Without Broker — Tight Coupling</div>
+  <div v-click style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">🛡</div>
+    <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.1rem;text-align:center;">Reliability</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">No message loss.<br>Every alarm must arrive.</div>
+  </div>
 
-<ul class="cross-list" style="font-size:0.78rem;">
-  <li>Producer knows consumer's address</li>
-  <li>Worker crash or overload → alarm loss</li>
-  <li>New worker → reconfigure all cameras</li>
-</ul>
+  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">⚡</div>
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet SLAs.<br>Process fast, not slow.</div>
+  </div>
 
-::right::
+  <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">💰</div>
+    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
+  </div>
 
-<div class="col-title" style="color:var(--accent-green,#4ade80);">✔ With Broker — Space · Time · Count</div>
-
-<ul class="check-list" style="font-size:0.78rem;">
-  <li><strong>Space:</strong> Producer does not know consumer address</li>
-  <li><strong>Time:</strong> Consumer can be offline — messages wait</li>
-  <li><strong>Count:</strong> Scale workers without camera changes</li>
-</ul>
-
-::bottom::
-
-<div style="margin-bottom:0.5rem;">
-  <BrokerDiagramSvg />
 </div>
 
-<div style="display:flex;align-items:center;gap:1.2rem;margin-top:0.4rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    The broker is not a bottleneck — it is the
-    <span class="accent-orange">decoupling point</span>
-    that makes horizontal scaling <span class="accent-green">possible in the first place.</span>
-    <span class="accent-comment">«</span>
-  </div>
-</div>
-
----
-layout: two-cols-header-with-footer
----
-
-<!-- SLIDE 4 — SCALING: DRONE ANALOGY -->
-
-<div class="slide-header"><span class="accent-pink">#</span> Thought Experiment: One big unit vs. many small ones</div>
-
-::left::
-
-<div class="col-title" style="color:var(--accent-orange,#fb923c);">↑ Vertical: Bigger weapon</div>
-
-<ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Physical limits of hardware</li>
-  <li>Single point of failure</li>
-</ul>
-<ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Lower latency — no network between components</li>
-  <li>Simpler programming model — shared memory</li>
-</ul>
-
-::right::
-
-<div class="col-title" style="color:var(--accent-cyan,#38bdf8);">→ Horizontal: Drone swarm</div>
-
-<ul class="check-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Theoretically unlimited capacity</li>
-  <li>Linear costs — pay per use</li>
-</ul>
-<ul class="cross-list" style="font-size:0.75rem;margin-top:0.3rem;">
-  <li>Higher latency — network overhead between nodes</li>
-  <li>More complex — distributed state &amp; coordination</li>
-</ul>
-
-::bottom::
-
-<div style="margin-top:-1.2rem;">
-  <DroneScalingSvg />
-</div>
-<div style="display:flex;align-items:flex-end;gap:1.2rem;margin-top:0.3rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    Drone = worker pod, Rocket = big server. Swarm scales <span class="accent-cyan">horizontally</span> — needs <span class="accent-orange">message broker.</span>
-    <span class="accent-comment">«</span>
-  </div>
-</div>
-
----
-layout: two-cols-header-with-footer
----
-
-<!-- SLIDE 5 — AUTOSCALING -->
-
-<div class="slide-header"><span class="accent-pink">#</span> Scale smart, not hard.</div>
-
-::left::
-
-<div class="examples-label accent-purple" style="font-size:0.78rem;">Requirements</div>
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
-  <li><strong>Stateless</strong> — No shared state between pods.</li>
-  <li><strong>Decoupling</strong> — Broker decouples producers and consumers.</li>
-  <li><strong>Observability</strong> — Metrics available (queue, CPU, latency) and fast pod startup.</li>
-</ul>
-<div class="examples-label accent-purple" style="font-size:0.78rem;margin-top:1rem;">Tradeoff</div>
-<ul class="check-list" style="font-size:0.78rem;margin-top:0.5rem;line-height:1.7;">
-  <li><strong>Reliability</strong> — No message loss, delivery guarantees.</li>
-  <li><strong>Cost</strong> — Keep resource spend low.</li>
-  <li><strong>Latency</strong> — Meet SLAs, low wait times.</li>
-</ul>
-
-::right::
-
-<div class="examples-label accent-cyan" style="font-size:0.78rem;margin-bottom:0.35rem;">Autoscaling metrics</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 0.5rem;margin-bottom:0.35rem;">
-  <div class="metric-box" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.78rem;">Queue</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by messages in queue (KEDA).</div>
-  </div>
-  <div class="metric-box" style="border:1px solid var(--accent-orange,#fb923c);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.78rem;">Load / CPU</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by worker utilization (HPA).</div>
-  </div>
-  <div class="metric-box" style="border:1px solid var(--accent-purple,#bd93f9);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.78rem;">Latency</div>
-    <div class="muted" style="font-size:0.7rem;">Scale by queue wait time (SLA).</div>
-  </div>
-  <div class="metric-box" style="border:1px solid var(--accent-green,#16a34a);border-radius:6px;padding:0.35rem 0.5rem;">
-    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:0.78rem;">Hybrid</div>
-    <div class="muted" style="font-size:0.7rem;">Scale up when queue <strong>or</strong> latency exceeded; down when both relaxed.</div>
-  </div>
-</div>
-<div class="muted" style="font-size:0.68rem;">… and many more options (custom metrics, Prometheus, etc.).</div>
-
-::bottom::
-
-<div style="display:flex;align-items:center;gap:1.2rem;">
-  <div class="problem-insight" style="margin:0;flex:1;">
-    <span class="accent-comment">»</span>
-    The broker enables autoscaling — it decouples senders and workers.<br>
-    Metrics (queue, load, latency, …) tell when to scale.
-    <span class="accent-comment">«</span>
-  </div>
+<div v-click class="problem-insight" style="margin-top:0.8rem;">
+  <span class="accent-comment">»</span>
+  Too many workers → <span class="accent-orange">cost explodes.</span>
+  Too few → <span class="accent-red">alarms are lost or slow.</span>
+  <span class="accent-comment">«</span>
 </div>
 
 ---
 layout: default-with-footer
 ---
 
-<!-- SLIDE 6 — INDUSTRY STANDARDS -->
+<!-- SLIDE 3 — MESSAGE BROKER -->
 
-<div class="slide-header"><span class="accent-cyan">#</span> Further thoughts &amp; industry standards.</div>
+<div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Strategy</div>
+
+<div style="font-size:0.92rem;margin-top:0.3rem;padding:0.5rem 1rem;border-left:3px solid var(--accent-orange,#fb923c);background:rgba(251,146,60,0.06);border-radius:0 6px 6px 0;">A middleman that <span class="accent-orange">receives</span> and <span class="accent-cyan">delivers</span> messages — producers and consumers never talk directly.</div>
+
+<div style="display:grid;grid-template-rows:auto auto 1fr;gap:0.6rem;flex:1;min-height:0;margin-top:0.6rem;">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:0.9rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.05rem;">⚡ Without Broker</div>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
+        <li>Worker down → alarm lost</li>
+        <li>Add worker → reconfigure cameras</li>
+      </ul>
+    </div>
+    <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.9rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:1.05rem;">✔ With Broker</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
+        <li>Messages wait if worker is busy</li>
+        <li>Add workers without touching cameras</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;">
+    <BrokerDiagramSvg />
+  </div>
+
+  <div class="problem-insight" style="margin:0;">
+    <span class="accent-comment">»</span>
+    The broker decouples <span class="accent-orange">who sends</span> from <span class="accent-cyan">who processes</span> — enabling horizontal scaling.
+    <span class="accent-comment">«</span>
+  </div>
+
+</div>
+
+---
+layout: default-with-footer
+---
+
+<!-- SLIDE 4 — SCALING: DRONE ANALOGY -->
+
+<div class="slide-header"><span class="accent-pink">#</span> One big unit vs. many small ones</div>
+
+<div style="display:grid;grid-template-rows:auto 1fr;gap:0.8rem;flex:1;min-height:0;">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">↑ Vertical Scaling</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Low latency, simple model</li>
+      </ul>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+        <li>Hardware limits</li>
+        <li>Single point of failure</li>
+      </ul>
+    </div>
+    <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1rem 1.4rem;">
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">→ Horizontal Scaling</div>
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+        <li>Unlimited capacity</li>
+        <li>Linear cost — pay per use</li>
+      </ul>
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+        <li>Network overhead &amp; coordination</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;gap:0.4rem;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:1.5rem;flex:1;min-height:0;">
+      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
+        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale up ↑</span>
+        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale down ↓</span>
+      </div>
+      <img src="/images/Scaling-Options.png" style="max-height:11rem;" />
+      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
+        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale out →</span>
+        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale in ←</span>
+      </div>
+    </div>
+    <div class="problem-insight" style="margin-top:0.2rem;">
+      <span class="accent-comment">»</span>
+      Swarm scales <span class="accent-cyan">horizontally</span> — needs a <span class="accent-orange">message broker.</span>
+      <span class="accent-comment">«</span>
+    </div>
+  </div>
+
+</div>
+
+---
+layout: default-with-footer
+---
+
+<!-- SLIDE 5 — AUTOSCALING -->
+
+<div class="slide-header"><span class="accent-pink">#</span> Autoscaling — let metrics decide.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
+
+  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">📬</div>
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">Queue</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">KEDA</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when the queue grows.<br>
+      Scale in when it empties.<br><br>
+      <span style="color:var(--accent-cyan,#38bdf8);">→ Best for bursty workloads.</span>
+    </div>
+  </div>
+
+  <div v-click style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">🔥</div>
+    <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">Load / CPU</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">HPA</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when workers are hot.<br>
+      Scale in when utilization drops.<br><br>
+      <span style="color:var(--accent-orange,#fb923c);">→ Best for CPU-bound tasks.</span>
+    </div>
+  </div>
+
+  <div v-click style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+    <div style="font-size:2rem;">⏱</div>
+    <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">SLA-driven</div>
+    <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
+      Scale out when wait time exceeds SLA.<br>
+      Scale in when latency relaxes.<br><br>
+      <span style="color:var(--accent-purple,#bd93f9);">→ Best for time-critical systems.</span>
+    </div>
+  </div>
+
+</div>
+
+<div v-click class="problem-insight" style="margin-top:0.8rem;">
+  <span class="accent-comment">»</span>
+  The broker decouples senders from workers —
+  metrics tell <span class="accent-cyan">when</span> to scale, platform handles <span class="accent-orange">how.</span>
+  <span class="accent-comment">«</span>
+</div>
+
+---
+layout: default-with-footer
+---
+
+<!-- SLIDE — TAKEAWAYS -->
+
+<div class="slide-header"><span class="accent-pink">#</span> What we learned today.</div>
+
+<div style="display:grid;grid-template-rows:repeat(4,1fr);gap:0.55rem;flex:1;min-height:0;margin-top:0.4rem;">
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">🔥</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.95rem;">Hybrid Edge–Cloud</div>
+      <div class="muted" style="font-size:0.8rem;">Fast local inference + powerful cloud models — best of both worlds.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">📨</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.95rem;">Message Broker = Decoupling</div>
+      <div class="muted" style="font-size:0.8rem;">Producers and consumers never talk directly — the broker absorbs bursts.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">↔</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.95rem;">Horizontal over Vertical</div>
+      <div class="muted" style="font-size:0.8rem;">Many small workers scale linearly — one big machine hits a ceiling.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">📊</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:0.95rem;">Autoscaling — metrics decide</div>
+      <div class="muted" style="font-size:0.8rem;">Queue depth, CPU, latency — let the platform scale for you.</div>
+    </div>
+  </div>
+
+</div>
+
+---
+layout: default
+---
+
+<!-- SLIDE — THANKS -->
+
+<div class="cover-wrap">
+  <h1 class="cover-title" style="font-size:2.2rem;">Thank you for your<br>
+    <span class="accent-cyan">attention!</span>
+  </h1>
+  <div class="cover-meta" style="margin-top:1.5rem;">
+    <div class="cover-author">Dr.-Ing. Anton Stadler</div>
+  </div>
+</div>
+
+---
+layout: default
+backup: true
+---
+
+<!-- BACKUP — INDUSTRY STANDARDS -->
+
+<div class="slide-header">
+  <span class="accent-cyan">#</span> Further thoughts &amp; industry standards.
+  <span class="muted text-sm" style="font-size:0.65em; margin-left:0.5rem;">BACKUP</span>
+</div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:0.6rem;">
 

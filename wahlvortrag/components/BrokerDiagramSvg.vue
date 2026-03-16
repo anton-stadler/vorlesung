@@ -59,8 +59,8 @@
 
         <!-- Vertical decoupling divider line (between Broker and Worker) -->
         <line x1="293" y1="8" x2="293" y2="122" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.35" />
-        <text x="293" y="8" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">worker not directly</text>
-        <text x="293" y="20" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">connected to cameras</text>
+        <text x="332" y="98" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">worker not directly</text>
+        <text x="332" y="110" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">connected to cameras</text>
 
         <!-- Worker box -->
         <rect x="298" y="45" width="68" height="38" rx="5" fill="transparent" stroke="#a78bfa" stroke-width="2" />
