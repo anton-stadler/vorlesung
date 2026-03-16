@@ -102,19 +102,19 @@ layout: default-with-footer
 
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
 
-  <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+  <div v-click style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">🛡</div>
     <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.1rem;text-align:center;">Reliability</div>
     <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">No message loss.<br>Every alarm must arrive.</div>
   </div>
 
-  <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">⚡</div>
     <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
     <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet SLAs.<br>Process fast, not slow.</div>
   </div>
 
-  <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+  <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">💰</div>
     <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
     <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
@@ -122,7 +122,7 @@ layout: default-with-footer
 
 </div>
 
-<div class="problem-insight" style="margin-top:0.8rem;">
+<div v-click class="problem-insight" style="margin-top:0.8rem;">
   <span class="accent-comment">»</span>
   Too many workers → <span class="accent-orange">cost explodes.</span>
   Too few → <span class="accent-red">alarms are lost or slow.</span>
@@ -135,21 +135,23 @@ layout: default-with-footer
 
 <!-- SLIDE 3 — MESSAGE BROKER -->
 
-<div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Producers &amp; Consumers</div>
+<div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Strategy</div>
 
-<div style="display:grid;grid-template-rows:auto 1fr;gap:0.8rem;flex:1;min-height:0;">
+<div style="font-size:0.92rem;margin-top:0.3rem;padding:0.5rem 1rem;border-left:3px solid var(--accent-orange,#fb923c);background:rgba(251,146,60,0.06);border-radius:0 6px 6px 0;">A middleman that <span class="accent-orange">receives</span> and <span class="accent-cyan">delivers</span> messages — producers and consumers never talk directly.</div>
+
+<div style="display:grid;grid-template-rows:auto auto 1fr;gap:0.6rem;flex:1;min-height:0;margin-top:0.6rem;">
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-    <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1rem 1.4rem;">
+    <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:0.9rem 1.4rem;">
       <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.05rem;">⚡ Without Broker</div>
-      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
         <li>Worker down → alarm lost</li>
         <li>Add worker → reconfigure cameras</li>
       </ul>
     </div>
-    <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1rem 1.4rem;">
+    <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.9rem 1.4rem;">
       <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:1.05rem;">✔ With Broker</div>
-      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+      <ul class="check-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
         <li>Messages wait if worker is busy</li>
         <li>Add workers without touching cameras</li>
       </ul>
@@ -158,11 +160,12 @@ layout: default-with-footer
 
   <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;">
     <BrokerDiagramSvg />
-    <div class="problem-insight" style="margin-top:0.4rem;">
-      <span class="accent-comment">»</span>
-      The broker decouples <span class="accent-orange">who sends</span> from <span class="accent-cyan">who processes</span> — enabling horizontal scaling.
-      <span class="accent-comment">«</span>
-    </div>
+  </div>
+
+  <div class="problem-insight" style="margin:0;">
+    <span class="accent-comment">»</span>
+    The broker decouples <span class="accent-orange">who sends</span> from <span class="accent-cyan">who processes</span> — enabling horizontal scaling.
+    <span class="accent-comment">«</span>
   </div>
 
 </div>
@@ -231,7 +234,7 @@ layout: default-with-footer
 
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
 
-  <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">📬</div>
     <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">Queue</div>
     <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">KEDA</div>
@@ -242,7 +245,7 @@ layout: default-with-footer
     </div>
   </div>
 
-  <div style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+  <div v-click style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">🔥</div>
     <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">Load / CPU</div>
     <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">HPA</div>
@@ -253,7 +256,7 @@ layout: default-with-footer
     </div>
   </div>
 
-  <div style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
+  <div v-click style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">⏱</div>
     <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
     <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">SLA-driven</div>
@@ -266,11 +269,55 @@ layout: default-with-footer
 
 </div>
 
-<div class="problem-insight" style="margin-top:0.8rem;">
+<div v-click class="problem-insight" style="margin-top:0.8rem;">
   <span class="accent-comment">»</span>
   The broker decouples senders from workers —
   metrics tell <span class="accent-cyan">when</span> to scale, platform handles <span class="accent-orange">how.</span>
   <span class="accent-comment">«</span>
+</div>
+
+---
+layout: default-with-footer
+---
+
+<!-- SLIDE — TAKEAWAYS -->
+
+<div class="slide-header"><span class="accent-pink">#</span> What we learned today.</div>
+
+<div style="display:grid;grid-template-rows:repeat(4,1fr);gap:0.55rem;flex:1;min-height:0;margin-top:0.4rem;">
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">🔥</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.95rem;">Hybrid Edge–Cloud</div>
+      <div class="muted" style="font-size:0.8rem;">Fast local inference + powerful cloud models — best of both worlds.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">📨</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.95rem;">Message Broker = Decoupling</div>
+      <div class="muted" style="font-size:0.8rem;">Producers and consumers never talk directly — the broker absorbs bursts.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">↔</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:0.95rem;">Horizontal over Vertical</div>
+      <div class="muted" style="font-size:0.8rem;">Many small workers scale linearly — one big machine hits a ceiling.</div>
+    </div>
+  </div>
+
+  <div v-click style="display:flex;align-items:center;gap:1rem;border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.55rem 1.2rem;">
+    <div style="font-size:1.5rem;min-width:2rem;text-align:center;">📊</div>
+    <div>
+      <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:0.95rem;">Autoscaling — metrics decide</div>
+      <div class="muted" style="font-size:0.8rem;">Queue depth, CPU, latency — let the platform scale for you.</div>
+    </div>
+  </div>
+
 </div>
 
 ---
