@@ -103,7 +103,7 @@ routeAlias: what-if
 <div style="display:flex;flex-direction:column;justify-content:center;gap:1.2rem;flex:1;min-height:0;margin-top:0.5rem;">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
-<div style="border:1px solid var(--accent-cyan);border-radius:8px;padding:0.9rem 1.1rem;">
+<div v-click="1" style="border:1px solid var(--accent-cyan);border-radius:8px;padding:0.9rem 1.1rem;">
 <div class="col-title" style="color:var(--accent-cyan);font-size:0.82rem;margin-bottom:0.5rem;">
 🗄 Was der Zettel kennt
 </div>
@@ -115,22 +115,26 @@ routeAlias: what-if
 <div class="muted" style="font-size:0.7rem;margin-top:0.6rem;">Nur der letzte Stand — kein Kontext.</div>
 </div>
 
-<div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.9rem 1.1rem;">
+<div v-click="2" style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.9rem 1.1rem;">
 <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:0.82rem;margin-bottom:0.5rem;">
 📜 Was passiert ist
 </div>
 <ul style="list-style:none;padding:0;margin:0;font-size:0.75rem;line-height:1.75;">
-<li><span class="accent-cyan">14:01</span> · Anna bestellt Margherita</li>
-<li><span class="accent-cyan">14:02</span> · Ben bestellt Flötzinger</li>
-<li><span class="accent-red">14:03</span> · Ben storniert Flötzinger</li>
-<li><span class="accent-cyan">14:06</span> · Ben bestellt Auer</li>
-<li><span class="accent-green">14:08</span> · Bestellung abgeschickt</li>
+<li v-click="3"><span class="accent-cyan">14:01</span> · Anna bestellt Margherita</li>
+<li v-click="4"><span class="accent-cyan">14:02</span> · Ben bestellt Salami</li>
+<li v-click="5"><span class="accent-cyan">14:03</span> · Clara bestellt Funghi</li>
+<li v-click="6"><span class="accent-cyan">14:04</span> · David bestellt Salami</li>
+<li v-click="7"><span class="accent-red">14:05</span> · Eva bestellt Hawaii</li>
+<li v-click="8"><span class="accent-red">14:06</span> · Eva storniert Hawaii</li>
+<li v-click="9"><span class="accent-cyan">14:06</span> · Eva bestellt Margherita</li>
+<li v-click="10"><span class="accent-cyan">14:07</span> · Franz bestellt Margherita</li>
+<li v-click="11"><span class="accent-green">14:08</span> · Bestellung abgeschickt</li>
 </ul>
 </div>
 
 </div>
 
-<div class="problem-insight" style="margin:0;">
+<div v-click="12" class="problem-insight" style="margin:0;">
 <span class="accent-comment">»</span>
 Was wäre, wenn wir <span class="accent-green">jedes Ereignis</span> gespeichert hätten —
 statt nur den <span class="accent-orange">letzten Stand?</span>
