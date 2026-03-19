@@ -6,8 +6,8 @@ const SVG_W = 800
 const SVG_H = 250
 const BRX = 305
 const BRW = 155
-const BRY = 55
-const BRH = 138
+const BRY = 77
+const BRH = 95
 const WRK_X = 548  // links genug, damit Pods die Capacity (rechts bei 768) nicht überlagern
 
 // ── Labels ────────────────────────────────────────────────────────────────────
@@ -59,6 +59,7 @@ const settingsOpen   = ref(false)
 const ratePerCamera  = ref(0.5)   // req/s per camera (default ½/s)
 const baseRate       = ref(1.0)   // processing fps for small instance
 const randomizer     = ref(0)     // 0 = deterministic, 1 = chaotic
+const maxQueue       = ref(25)    // max queue length (configurable)
 const showAnimations = ref(true)  // camera flash + dashed connectors
 const startupTimeMs  = ref(1000)  // Pod startup delay (ms) until status 'active'
 
@@ -163,8 +164,8 @@ const camArrowTargets = computed(() => {
 })
 
 // ── Worker grid (kompakte Pod-Höhe, damit bis zu 16 Pods passen) ──────────────
-const WRK_CAPACITY_X = 768  // Capacity-Label rechts der Pods (wie Requests links der Kameras)
-// Pod-Inhalt linksbündig mit Abstand, damit „Pod 16“ / „starting…“ nicht abgeschnitten wird
+const WRK_CAPACITY_X = 760  // Capacity-Label rechts der Pods (wie Requests links der Kameras)
+// Pod-Inhalt linksbündig mit Abstand, damit „Pod 16” / „starting…” nicht abgeschnitten wird
 const POD_LEFT_PAD = 10
 const POD_ICON_W = 4
 const POD_GAP = 5
@@ -184,9 +185,10 @@ const mode3Positions = computed(() => workerGrid(manualWorkers.value))
 const mode4Positions = computed(() => workerGrid(autoWorkers.value.length))
 
 // ── Server box ────────────────────────────────────────────────────────────────
+const SBOX_RIGHT = WRK_CAPACITY_X - 36  // right edge of server box (gap for text)
 const sBox = computed(() => {
   const s = [{ w: 96, h: 62 }, { w: 115, h: 80 }, { w: 140, h: 100 }, { w: 170, h: 128 }][verticalSize.value - 1]
-  return { x: WRK_X, y: Math.round((SVG_H - s.h) / 2), ...s }
+  return { x: SBOX_RIGHT - s.w, y: Math.round((SVG_H - s.h) / 2), ...s }
 })
 
 // ── Metrics ───────────────────────────────────────────────────────────────────
@@ -216,7 +218,7 @@ const workerUtilPct = computed(() => {
 })
 
 const effectiveLoad = computed(() =>
-  queueLength.value >= 20 ? 1 : workerUtilPct.value
+  queueLength.value >= maxQueue.value ? 1 : workerUtilPct.value
 )
 
 const latencyMs = computed(() => {
@@ -226,7 +228,7 @@ const latencyMs = computed(() => {
   return Math.round((queueLength.value / rate) * 1000 + PROCESSING_TIME_MS)
 })
 
-const queueBarW  = computed(() => Math.round((Math.min(queueLength.value, 20) / 20) * (BRW - 22)))
+const queueBarW  = computed(() => Math.round((Math.min(queueLength.value, maxQueue.value) / maxQueue.value) * (BRW - 22)))
 const queueColor = computed(() =>
   queueLength.value >= 8 ? C.value.red :
   queueLength.value >= 5 ? C.value.orange :
@@ -264,7 +266,7 @@ function fireOneCamera() {
       setTimeout(() => { cameraFiring[idx] = false }, FIRE_ANIM_MS)
     }
     const wouldBe = queueLength.value + 1
-    const newQueue = Math.min(20, wouldBe)
+    const newQueue = Math.min(maxQueue.value, wouldBe)
     const lost = wouldBe - newQueue
     const countAsLost = lost > 0 && mode.value !== 1
     if (countAsLost) messagesLost.value = messagesLost.value + lost
@@ -345,7 +347,7 @@ function runKEDA() {
 function tick() {
   const proc    = processingRate.value * 0.2
   const wouldBe = queueLength.value - proc
-  queueLength.value = Math.max(0, Math.min(20, wouldBe))
+  queueLength.value = Math.max(0, Math.min(maxQueue.value, wouldBe))
   if (mode.value === 1 && incomingRate.value > processingRate.value) {
     messagesLost.value += (incomingRate.value - processingRate.value) * 0.2
   }
@@ -527,7 +529,7 @@ onUnmounted(() => {
                   <span class="sp-val">{{ loadTargetPct }}%</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale up from</span>
+                  <span class="sp-label">Scale out from</span>
                   <input type="range" min="50" max="98" v-model.number="loadScaleUpPct" class="sp-slider" />
                   <span class="sp-val">{{ loadScaleUpPct }}%</span>
                 </div>
@@ -589,6 +591,13 @@ onUnmounted(() => {
               <input type="range" min="500" max="8000" step="500"
                      v-model.number="startupTimeMs" class="sp-slider" />
               <span class="sp-val">{{ (startupTimeMs / 1000).toFixed(1) }} s</span>
+            </div>
+
+            <div class="sp-row">
+              <span class="sp-label">Max Queue Length</span>
+              <input type="range" min="5" max="50" step="5"
+                     v-model.number="maxQueue" class="sp-slider" />
+              <span class="sp-val">{{ maxQueue }}</span>
             </div>
 
             <div class="sp-sep"></div>
@@ -693,27 +702,19 @@ onUnmounted(() => {
           <text :x="BRX + 36" :y="BRY + 21" :fill="C.fg" font-weight="bold"
                 style="font-size:11px">Message Broker</text>
           <text :x="BRX + 11" :y="BRY + 38" :fill="C.muted"
-                style="font-size:9px">Queue: {{ Math.round(queueLength) }} / 20</text>
+                style="font-size:9px">Queue: {{ Math.round(queueLength) }} / {{ maxQueue }}</text>
           <rect :x="BRX + 11" :y="BRY + 43" :width="BRW - 22" height="9" rx="4" :fill="C.barBg" />
           <rect :x="BRX + 11" :y="BRY + 43" :width="queueBarW" height="9" rx="4" :fill="queueColor" />
-          <line :x1="BRX + 11 + (5/20)*(BRW-22)" :y1="BRY + 42"
-                :x2="BRX + 11 + (5/20)*(BRW-22)" :y2="BRY + 53"
+          <line :x1="BRX + 11 + (5/maxQueue)*(BRW-22)" :y1="BRY + 42"
+                :x2="BRX + 11 + (5/maxQueue)*(BRW-22)" :y2="BRY + 53"
                 :stroke="C.orange" stroke-width="1.5" opacity="0.8" />
-          <line :x1="BRX + 11 + (8/20)*(BRW-22)" :y1="BRY + 42"
-                :x2="BRX + 11 + (8/20)*(BRW-22)" :y2="BRY + 53"
+          <line :x1="BRX + 11 + (8/maxQueue)*(BRW-22)" :y1="BRY + 42"
+                :x2="BRX + 11 + (8/maxQueue)*(BRW-22)" :y2="BRY + 53"
                 :stroke="C.red" stroke-width="1.5" opacity="0.8" />
           <text :x="BRX + 11"       :y="BRY + 63" :fill="C.vMuted" style="font-size:7.5px">0</text>
-          <text :x="BRX + BRW - 11" :y="BRY + 63" text-anchor="end" :fill="C.vMuted" style="font-size:7.5px">20</text>
-          <line :x1="BRX + 8" :y1="BRY + 72" :x2="BRX + BRW - 8" :y2="BRY + 72"
-                :stroke="C.border" stroke-width="1" />
-          <text :x="BRX + 11"       :y="BRY + 83" :fill="C.vMuted" style="font-size:7.5px">Incoming rate</text>
-          <text :x="BRX + BRW - 11" :y="BRY + 83" text-anchor="end" :fill="C.cyan" font-weight="bold"
-                style="font-size:8px">{{ incomingRate.toFixed(1) }} fps</text>
-          <text :x="BRX + 11"       :y="BRY + 96" :fill="C.vMuted" style="font-size:7.5px">Processing rate</text>
-          <text :x="BRX + BRW - 11" :y="BRY + 96" text-anchor="end" :fill="C.purple" font-weight="bold"
-                style="font-size:8px">{{ processingRate.toFixed(1) }} fps</text>
+          <text :x="BRX + BRW - 11" :y="BRY + 63" text-anchor="end" :fill="C.vMuted" style="font-size:7.5px">{{ maxQueue }}</text>
           <text :x="BRX + BRW / 2" :y="BRY + BRH - 10" text-anchor="middle" :fill="C.vMuted"
-                style="font-size:7.5px;font-style:italic">MQTT / RabbitMQ</text>
+                style="font-size:7.5px;font-style:italic">Mosquitto (MQTT)</text>
           <text :x="BRX + BRW / 2" :y="BRY + BRH + 18" text-anchor="middle" :fill="C.muted"
                 style="font-size:8px">Throughput</text>
           <text :x="BRX + BRW / 2" :y="BRY + BRH + 32" text-anchor="middle" :fill="C.teal"
@@ -808,7 +809,7 @@ onUnmounted(() => {
       <div v-if="mode > 1" class="metric">
         <div class="m-label">Queue</div>
         <div class="m-val" :style="{ color: queueLength >= 8 ? C.red : queueLength >= 5 ? C.orange : undefined }">
-          {{ Math.round(queueLength) }}<span class="m-unit"> / 20</span>
+          {{ Math.round(queueLength) }}<span class="m-unit"> / {{ maxQueue }}</span>
         </div>
       </div>
       <div class="metric">

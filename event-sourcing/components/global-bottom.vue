@@ -1,24 +1,52 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useNav } from '@slidev/client'
 const { currentPage, slides, go } = useNav()
 
-const mainTotal = computed(() =>
-  slides.value.filter(s => !s.meta?.slide?.frontmatter?.backup).length
+const mainSlides = computed(() =>
+  slides.value.filter(s => !s.meta?.slide?.frontmatter?.backup)
 )
+const mainTotal = computed(() => mainSlides.value.length)
 const displayPage = computed(() =>
   Math.min(currentPage.value, mainTotal.value)
 )
+
+const showPicker = ref(false)
+function goToSlide(no) {
+  go(no)
+  showPicker.value = false
+}
 </script>
 
 <template>
   <div class="global-footer" role="contentinfo" aria-label="Fußzeile: Event Sourcing, TH Rosenheim, Seitennummer">
+    <!-- Backdrop -->
+    <div v-if="showPicker" class="picker-backdrop" @click="showPicker = false" />
+    <!-- Folienauswahl -->
+    <div v-if="showPicker" class="picker-popup">
+      <button
+        v-for="slide in mainSlides"
+        :key="slide.no"
+        class="picker-row"
+        :class="{ 'picker-row--active': slide.no === currentPage }"
+        @click="goToSlide(slide.no)"
+      >
+        <span class="picker-no">{{ String(slide.no).padStart(2, '0') }}</span>
+        <span class="picker-alias">{{ slide.meta?.slide?.frontmatter?.routeAlias ?? '—' }}</span>
+      </button>
+    </div>
+
     <span class="footer-slash">//</span>
     Anton Stadler | Event Sourcing als Architektur-Pattern mit Python | 2026-03-20
     <span class="footer-spacer" />
     <button class="footer-btn footer-demo" @click="go('demo')" title="Zur Demo">Demo</button>
     <button class="footer-btn" @click="go(currentPage - 1)" title="Vorherige Folie">◀</button>
-    <span class="footer-num">{{ String(displayPage).padStart(2, '0') }}</span>
+    <span
+      class="footer-num footer-num--clickable"
+      :class="{ 'footer-num--open': showPicker }"
+      title="Folienauswahl"
+      @click="showPicker = !showPicker"
+    >{{ String(displayPage).padStart(2, '0') }}</span>
     <span class="footer-sep"> / </span>
     <span class="footer-total">{{ String(mainTotal).padStart(2, '0') }}</span>
     <button class="footer-btn" @click="go(currentPage + 1)" title="Nächste Folie">▶</button>
@@ -27,7 +55,6 @@ const displayPage = computed(() =>
 
 <style scoped>
 .global-footer {
-  /* Am unteren Rand der Folie, nicht des Viewports – Control-Leiste bleibt sichtbar */
   position: absolute;
   bottom: 0;
   left: 0;
@@ -58,6 +85,18 @@ const displayPage = computed(() =>
 .footer-num {
   color: var(--accent-cyan, #007BAA);
   font-weight: 700;
+}
+
+.footer-num--clickable {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0.1rem 0.25rem;
+  transition: background 0.15s, color 0.15s;
+}
+.footer-num--clickable:hover,
+.footer-num--open {
+  background: rgba(0, 123, 170, 0.12);
+  color: var(--accent-cyan, #007BAA);
 }
 
 .footer-sep {
@@ -95,5 +134,72 @@ const displayPage = computed(() =>
 .footer-demo:hover {
   background: var(--accent-pink, #C0397A);
   color: white;
+}
+
+/* Backdrop */
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+}
+
+/* Folienauswahl Popup */
+.picker-popup {
+  position: absolute;
+  bottom: calc(100% + 0.3rem);
+  right: 2rem;
+  z-index: 50;
+  background: var(--slide-bg, #F8F8F4);
+  border: 1px solid var(--slide-border, #CBD5E1);
+  border-radius: 8px;
+  padding: 0.4rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 11rem;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.65rem;
+  color: var(--slide-muted, #5A6A8A);
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.picker-row:hover {
+  background: rgba(0, 123, 170, 0.08);
+  border-color: var(--accent-cyan, #007BAA);
+  color: var(--accent-cyan, #007BAA);
+}
+.picker-row--active {
+  background: rgba(0, 123, 170, 0.12);
+  border-color: var(--accent-cyan, #007BAA);
+  color: var(--accent-cyan, #007BAA);
+  font-weight: 700;
+}
+
+.picker-no {
+  opacity: 0.5;
+  min-width: 1.4rem;
+}
+.picker-row--active .picker-no,
+.picker-row:hover .picker-no {
+  opacity: 0.7;
+}
+
+.picker-alias {
+  letter-spacing: 0.03em;
 }
 </style>

@@ -9,6 +9,7 @@ fonts:
 addons:
   - prime
   - slidev-addon-rosenheim-shared
+routeAlias: cover
 
 ---
 
@@ -30,6 +31,7 @@ addons:
 ---
 layout: two-cols-header-with-footer
 showDemo: false
+routeAlias: fire-detection
 ---
 
 <!-- SLIDE 2 — OPENER: HYBRID FIRE DETECTION -->
@@ -94,75 +96,35 @@ routeAlias: demo
 
 ---
 layout: default-with-footer
----
-
-<!-- TRADEOFF SLIDE -->
-
-<div class="slide-header"><span class="accent-pink">#</span> Scale smart — three competing forces.</div>
-
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
-
-  <div v-click style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
-    <div style="font-size:2.8rem;">🛡</div>
-    <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.1rem;text-align:center;">Reliability</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">No message loss.<br>Every alarm must arrive.</div>
-  </div>
-
-  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
-    <div style="font-size:2.8rem;">⚡</div>
-    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet SLAs.<br>Process fast, not slow.</div>
-  </div>
-
-  <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
-    <div style="font-size:2.8rem;">💰</div>
-    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
-  </div>
-
-</div>
-
-<div v-click class="problem-insight" style="margin-top:0.8rem;">
-  <span class="accent-comment">»</span>
-  Too many workers → <span class="accent-orange">cost explodes.</span>
-  Too few → <span class="accent-red">alarms are lost or slow.</span>
-  <span class="accent-comment">«</span>
-</div>
-
----
-layout: default-with-footer
+routeAlias: broker
 ---
 
 <!-- SLIDE 3 — MESSAGE BROKER -->
 
 <div class="slide-header"><span class="accent-pink">#</span> Message Broker: Decoupling Strategy</div>
 
-<div style="font-size:0.92rem;margin-top:0.3rem;padding:0.5rem 1rem;border-left:3px solid var(--accent-orange,#fb923c);background:rgba(251,146,60,0.06);border-radius:0 6px 6px 0;">A middleman that <span class="accent-orange">receives</span> and <span class="accent-cyan">delivers</span> messages — producers and consumers never talk directly.</div>
+<div style="display:grid;grid-template-rows:auto 1fr auto auto;gap:0.7rem;flex:1;min-height:0;">
 
-<div style="display:grid;grid-template-rows:auto auto 1fr;gap:0.6rem;flex:1;min-height:0;margin-top:0.6rem;">
+  <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:0;">
+    <BrokerDiagramSvg :brokerOnly="true" />
+  </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-    <div style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:0.9rem 1.4rem;">
-      <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.05rem;">⚡ Without Broker</div>
-      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
-        <li>Worker down → alarm lost</li>
-        <li>Add worker → reconfigure cameras</li>
-      </ul>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+    <div v-click="1" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:0.9rem 1.2rem;display:flex;flex-direction:column;gap:0.3rem;">
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1rem;">📬 Buffering</div>
+      <div class="muted" style="font-size:0.85rem;line-height:1.6;">Burst of alarms? Queue absorbs the load — no message is lost.</div>
     </div>
-    <div style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:0.9rem 1.4rem;">
-      <div class="col-title" style="color:var(--accent-green,#4ade80);font-size:1.05rem;">✔ With Broker</div>
-      <ul class="check-list" style="font-size:0.95rem;margin-top:0.6rem;line-height:2;">
-        <li>Messages wait if worker is busy</li>
-        <li>Add workers without touching cameras</li>
-      </ul>
+    <div v-click="1" style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:0.9rem 1.2rem;display:flex;flex-direction:column;gap:0.3rem;">
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1rem;">↔ Decoupling</div>
+      <div class="muted" style="font-size:0.85rem;line-height:1.6;">Camera doesn't know workers — add or remove them freely.</div>
+    </div>
+    <div v-click="1" style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:0.9rem 1.2rem;display:flex;flex-direction:column;gap:0.3rem;">
+      <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1rem;">⚡ Scalability</div>
+      <div class="muted" style="font-size:0.85rem;line-height:1.6;">Spin up any number of workers — broker distributes the work.</div>
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;">
-    <BrokerDiagramSvg />
-  </div>
-
-  <div class="problem-insight" style="margin:0;">
+  <div v-click="2" class="problem-insight" style="margin:0;">
     <span class="accent-comment">»</span>
     The broker decouples <span class="accent-orange">who sends</span> from <span class="accent-cyan">who processes</span> — enabling horizontal scaling.
     <span class="accent-comment">«</span>
@@ -172,6 +134,7 @@ layout: default-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: scaling
 ---
 
 <!-- SLIDE 4 — SCALING: DRONE ANALOGY -->
@@ -188,13 +151,13 @@ layout: default-with-footer
       </ul>
       <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
         <li>Hardware limits</li>
-        <li>Single point of failure</li>
+        <li>Cost scales superlinearly</li>
       </ul>
     </div>
     <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1rem 1.4rem;">
       <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">→ Horizontal Scaling</div>
       <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
-        <li>Unlimited capacity</li>
+        <li>Scales to any load</li>
         <li>Linear cost — pay per use</li>
       </ul>
       <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
@@ -226,6 +189,7 @@ layout: default-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: autoscaling
 ---
 
 <!-- SLIDE 5 — AUTOSCALING -->
@@ -259,9 +223,9 @@ layout: default-with-footer
   <div v-click style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">⏱</div>
     <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
-    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">SLA-driven</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">deadline-driven</div>
     <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
-      Scale out when wait time exceeds SLA.<br>
+      Scale out when wait time exceeds the response-time limit.<br>
       Scale in when latency relaxes.<br><br>
       <span style="color:var(--accent-purple,#bd93f9);">→ Best for time-critical systems.</span>
     </div>
@@ -278,6 +242,45 @@ layout: default-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: tradeoffs
+---
+
+<!-- TRADEOFF SLIDE -->
+
+<div class="slide-header"><span class="accent-pink">#</span> Scale smart — three competing forces.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;flex:1;min-height:0;">
+
+  <div v-click style="border:1px solid var(--accent-red,#f87171);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">🛡</div>
+    <div class="col-title" style="color:var(--accent-red,#f87171);font-size:1.1rem;text-align:center;">Reliability</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">No message loss.<br>Every alarm must arrive.</div>
+  </div>
+
+  <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">⚡</div>
+    <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Low response time.<br>Alarms processed within 2 s.</div>
+  </div>
+
+  <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
+    <div style="font-size:2.8rem;">💰</div>
+    <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
+  </div>
+
+</div>
+
+<div v-click class="problem-insight" style="margin-top:0.8rem;">
+  <span class="accent-comment">»</span>
+  Too many workers → <span class="accent-orange">cost explodes.</span>
+  Too few → <span class="accent-red">alarms are lost or slow.</span>
+  <span class="accent-comment">«</span>
+</div>
+
+---
+layout: default-with-footer
+routeAlias: takeaways
 ---
 
 <!-- SLIDE — TAKEAWAYS -->
@@ -322,6 +325,7 @@ layout: default-with-footer
 
 ---
 layout: default
+routeAlias: thanks
 ---
 
 <!-- SLIDE — THANKS -->
@@ -338,6 +342,7 @@ layout: default
 ---
 layout: default
 backup: true
+routeAlias: backup
 ---
 
 <!-- BACKUP — INDUSTRY STANDARDS -->

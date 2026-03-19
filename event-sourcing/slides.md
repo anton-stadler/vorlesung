@@ -13,6 +13,7 @@ fonts:
 addons:
   - prime
   - slidev-addon-rosenheim-shared
+routeAlias: cover
 
 ---
 
@@ -34,6 +35,7 @@ addons:
 
 ---
 layout: default-with-footer
+routeAlias: problem
 ---
 
 <!-- SLIDE 2 — DAS PROBLEM -->
@@ -89,6 +91,7 @@ routeAlias: demo
 
 ---
 layout: default-with-footer
+routeAlias: what-if
 ---
 
 <!-- SLIDE 4 — WAS WÄRE WENN -->
@@ -138,6 +141,7 @@ statt nur den <span class="accent-orange">letzten Stand?</span>
 
 ---
 layout: default-with-footer
+routeAlias: python
 ---
 
 <!-- SLIDE 6 — PYTHON MINIMALBEISPIEL -->
@@ -154,6 +158,7 @@ layout: default-with-footer
 
 ---
 layout: two-cols-header-with-footer
+routeAlias: when-to-use
 ---
 
 <!-- SLIDE 7 — EINORDNUNG -->
@@ -216,6 +221,7 @@ layout: two-cols-header-with-footer
 
 ---
 layout: default-with-footer
+routeAlias: takeaways
 ---
 
 <!-- SLIDE — TAKEAWAYS -->
@@ -260,6 +266,7 @@ layout: default-with-footer
 
 ---
 layout: default
+routeAlias: thanks
 ---
 
 <!-- SLIDE 8 — THANKS -->
@@ -276,6 +283,7 @@ layout: default
 ---
 layout: default
 backup: true
+routeAlias: backup
 ---
 
 <!-- SLIDE 9 — VERTIEFUNG -->
