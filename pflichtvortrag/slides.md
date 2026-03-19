@@ -198,17 +198,10 @@ layout: two-cols-header-with-footer
   </div>
 </div>
 <div class="example-item">
-  <span class="example-icon">🏥</span>
+  <span class="example-icon">♟</span>
   <div>
-    <div class="example-name">Patientenakte</div>
-    <div class="example-desc muted">Lückenlose, unveränderliche Behandlungshistorie</div>
-  </div>
-</div>
-<div class="example-item">
-  <span class="example-icon">🌿</span>
-  <div>
-    <div class="example-name">Git</div>
-    <div class="example-desc muted">Jeder Commit ist ein unveränderliches Event</div>
+    <div class="example-name">Schach (Multiplayer)</div>
+    <div class="example-desc muted">Jeder Zug ist ein Event — Partie jederzeit rekonstruierbar</div>
   </div>
 </div>
 
