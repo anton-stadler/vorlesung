@@ -54,8 +54,9 @@ def _add(orders: dict, data: dict) -> dict:
     product = data["product"]
     new_orders = orders.copy()
     if product not in new_orders:
-        new_orders[product] = 0
-    new_orders[product] += 1
+        new_orders[product] = 1
+    elif product in new_orders:
+        new_orders[product] += 1
     return new_orders
 
 
@@ -63,7 +64,7 @@ def _remove(orders: dict, data: dict) -> dict:
     """Removes an order from the orders dictionary."""
     product = data["product"]
     new_orders = orders.copy()
-    if product in new_orders and new_orders[product] > 0:
+    if product in new_orders:
         new_orders[product] -= 1
         if new_orders[product] == 0:
             del new_orders[product]
@@ -80,7 +81,7 @@ def _run_demo():
     print("\nOrders:", get_orders())
     print("\nReplay:")
     get_orders(replay_mode=True)
-    
+
 
 if __name__ == "__main__":
     interactive = "--interactive" in sys.argv or "-i" in sys.argv
