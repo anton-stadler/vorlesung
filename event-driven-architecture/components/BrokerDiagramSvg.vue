@@ -1,8 +1,12 @@
+<script setup>
+const props = defineProps({ brokerOnly: { type: Boolean, default: false } })
+</script>
+
 <template>
   <div style="display:flex;gap:1.5rem;justify-content:space-around;align-items:center;width:100%;">
 
-    <!-- Left: tight coupling -->
-    <div style="flex:1;max-width:320px;">
+    <!-- Left: tight coupling (hidden in brokerOnly mode) -->
+    <div v-if="!brokerOnly" style="flex:1;max-width:320px;">
       <svg viewBox="0 0 280 145" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <marker id="s3arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
@@ -27,9 +31,9 @@
       </svg>
     </div>
 
-    <!-- Right: with broker — FOCUS ON DECOUPLING -->
-    <div style="flex:1;max-width:400px;">
-      <svg viewBox="0 0 380 130" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <!-- Broker diagram — full width in brokerOnly mode -->
+    <div :style="brokerOnly ? 'width:100%;max-width:620px;' : 'flex:1;max-width:400px;'">
+      <svg viewBox="0 0 410 130" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <marker id="s3arrowO" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
             <polygon points="0 0, 8 3, 0 6" style="fill:#fb923c;" />
@@ -45,27 +49,24 @@
         <text x="37" y="76" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">HTTP POST</text>
 
         <!-- Arrow Cam → Broker with topic label -->
-        <line x1="70" y1="64" x2="158" y2="64" stroke="#fb923c" stroke-width="2" marker-end="url(#s3arrowO)" />
-        <text x="114" y="56" style="fill:#fb923c;font-size:8px;font-family:monospace;" text-anchor="middle">"fire.alarm"</text>
+        <line x1="70" y1="64" x2="148" y2="64" stroke="#fb923c" stroke-width="2" marker-end="url(#s3arrowO)" />
+        <text x="109" y="56" style="fill:#fb923c;font-size:8px;font-family:monospace;" text-anchor="middle">"fire.alarm"</text>
 
         <!-- Broker box — prominent -->
-        <rect x="158" y="30" width="90" height="66" rx="6" fill="transparent" stroke="#fb923c" stroke-width="2.5" />
-        <text x="203" y="54" style="fill:#fb923c;font-size:11px;font-family:monospace;font-weight:bold;" text-anchor="middle">📮 Broker</text>
-        <text x="203" y="68" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">RabbitMQ</text>
-        <text x="203" y="82" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.5;" text-anchor="middle">Queue</text>
+        <rect x="148" y="30" width="120" height="66" rx="6" fill="transparent" stroke="#fb923c" stroke-width="2.5" />
+        <text x="208" y="54" style="fill:#fb923c;font-size:11px;font-family:monospace;font-weight:bold;" text-anchor="middle">📮 Broker</text>
+        <text x="208" y="68" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">e.g. Mosquitto (MQTT)</text>
+        <text x="208" y="82" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.5;" text-anchor="middle">Queue</text>
 
-        <!-- Arrow Broker → Worker (reaches Worker box) -->
-        <line x1="248" y1="64" x2="298" y2="64" stroke="#a78bfa" stroke-width="2" marker-end="url(#s3arrowP)" />
+        <!-- Arrow Broker → Worker -->
+        <line x1="268" y1="64" x2="318" y2="64" stroke="#a78bfa" stroke-width="2" marker-end="url(#s3arrowP)" />
 
-        <!-- Vertical decoupling divider line (between Broker and Worker) -->
-        <line x1="293" y1="8" x2="293" y2="122" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.35" />
-        <text x="332" y="98" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">worker not directly</text>
-        <text x="332" y="110" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">connected to cameras</text>
+        <!-- Vertical decoupling divider line (removed) -->
 
         <!-- Worker box -->
-        <rect x="298" y="45" width="68" height="38" rx="5" fill="transparent" stroke="#a78bfa" stroke-width="2" />
-        <text x="332" y="62" style="fill:#a78bfa;font-size:10px;font-family:monospace;" text-anchor="middle">⚙ Worker</text>
-        <text x="332" y="76" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">any number</text>
+        <rect x="318" y="45" width="68" height="38" rx="5" fill="transparent" stroke="#a78bfa" stroke-width="2" />
+        <text x="352" y="62" style="fill:#a78bfa;font-size:10px;font-family:monospace;" text-anchor="middle">⚙ Worker</text>
+        <text x="352" y="76" style="fill:currentColor;font-size:8px;font-family:monospace;opacity:0.6;" text-anchor="middle">any number</text>
       </svg>
     </div>
 
