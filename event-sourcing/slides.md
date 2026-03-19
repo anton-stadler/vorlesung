@@ -47,21 +47,21 @@ routeAlias: problem
 <div style="display:flex;flex-direction:column;justify-content:space-between;flex:1;min-height:0;margin-top:0.5rem;">
 
   <div style="display:grid;grid-template-columns:1fr 9.5rem;align-items:center;row-gap:0.6rem;font-size:0.85rem;line-height:1.7;">
-    <span>▪ Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></span><span class="badge badge-cyan" style="white-space:nowrap;text-align:center;">Lost Write</span>
-    <span>▪ Alle reden gleichzeitig auf den Besteller ein</span><span class="badge badge-purple" style="white-space:nowrap;text-align:center;">Overload</span>
-    <span>▪ Das Kind <span class="accent-red">malt auf dem Zettel herum</span> — teilweise unleserlich</span><span class="badge badge-red" style="white-space:nowrap;text-align:center;">Hackerangriff</span>
-    <span>▪ <span class="accent-red">»Dieses Gericht gibt's nicht mehr«</span> — Bestellung überarbeiten</span><span class="badge badge-orange" style="white-space:nowrap;text-align:center;">Breaking Change</span>
+    <span v-click>▪ Kugelschreiber schreibt nicht — <em>hab ich jetzt schon einen Strich gemacht?</em></span><span v-click="1" class="badge badge-cyan" style="white-space:nowrap;text-align:center;">Lost Write</span>
+    <span v-click="2">▪ Alle reden gleichzeitig auf den Besteller ein</span><span v-click="2" class="badge badge-purple" style="white-space:nowrap;text-align:center;">Overload</span>
+    <span v-click="3">▪ Das Kind <span class="accent-red">malt auf dem Zettel herum</span> — teilweise unleserlich</span><span v-click="3" class="badge badge-red" style="white-space:nowrap;text-align:center;">Hackerangriff</span>
+    <span v-click="4">▪ <span class="accent-red">»Dieses Gericht gibt's nicht mehr«</span> — Bestellung überarbeiten</span><span v-click="4" class="badge badge-orange" style="white-space:nowrap;text-align:center;">Breaking Change</span>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:0.4rem;">
-    <ProblemBox color="red" icon="!">Eine Pizza zu wenig.</ProblemBox>
+    <ProblemBox v-click="5" color="red" icon="!">Eine Pizza zu wenig.</ProblemBox>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
-      <ProblemBox color="yellow">Wer hat was bestellt?</ProblemBox>
-      <ProblemBox color="yellow">Was wurde storniert?</ProblemBox>
+      <ProblemBox v-click="6" color="yellow">Wer hat was bestellt?</ProblemBox>
+      <ProblemBox v-click="6" color="yellow">Was wurde storniert?</ProblemBox>
     </div>
   </div>
 
-  <div class="problem-insight" style="margin:0;">
+  <div v-click="7" class="problem-insight" style="margin:0;">
     <span class="accent-comment">»</span>
     Am Ende kennt der Zettel nur den <span class="accent-orange">letzten Stand</span> —
     die <span class="accent-red">Geschichte ist verloren.</span>
