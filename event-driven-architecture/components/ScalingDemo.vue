@@ -527,7 +527,7 @@ onUnmounted(() => {
                   <span class="sp-val">{{ loadTargetPct }}%</span>
                 </div>
                 <div class="sp-row">
-                  <span class="sp-label">Scale up from</span>
+                  <span class="sp-label">Scale out from</span>
                   <input type="range" min="50" max="98" v-model.number="loadScaleUpPct" class="sp-slider" />
                   <span class="sp-val">{{ loadScaleUpPct }}%</span>
                 </div>

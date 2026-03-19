@@ -111,7 +111,7 @@ layout: default-with-footer
   <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">⚡</div>
     <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet SLAs.<br>Process fast, not slow.</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Meet deadlines.<br>Process fast, not slow.</div>
   </div>
 
   <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
@@ -188,13 +188,13 @@ layout: default-with-footer
       </ul>
       <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
         <li>Hardware limits</li>
-        <li>Single point of failure</li>
+        <li>Cost scales superlinearly</li>
       </ul>
     </div>
     <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1rem 1.4rem;">
       <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">→ Horizontal Scaling</div>
       <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
-        <li>Unlimited capacity</li>
+        <li>Scales to any load</li>
         <li>Linear cost — pay per use</li>
       </ul>
       <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
@@ -259,9 +259,9 @@ layout: default-with-footer
   <div v-click style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">⏱</div>
     <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
-    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">SLA-driven</div>
+    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">deadline-driven</div>
     <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
-      Scale out when wait time exceeds SLA.<br>
+      Scale out when wait time exceeds the response-time limit.<br>
       Scale in when latency relaxes.<br><br>
       <span style="color:var(--accent-purple,#bd93f9);">→ Best for time-critical systems.</span>
     </div>
