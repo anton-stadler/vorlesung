@@ -66,7 +66,7 @@ def _remove(orders: dict, data: dict) -> dict:
     new_orders = orders.copy()
     if product in new_orders:
         new_orders[product] -= 1
-        if new_orders[product] == 0:
+        if new_orders[product] <= 0:
             del new_orders[product]
     return new_orders
 
