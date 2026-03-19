@@ -1,53 +1,82 @@
 import code
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+
 
 @dataclass
 class Event:
     """Immutable event stored in the event store."""
-    type: str # "item_added" or "item_removed"
-    data: dict # {"user": str, "item": str}
-    ts: str = datetime.now().strftime("%H:%M:%S")  # timestamp
+    event_type:     str # "ADD" or "REMOVE"
+    data:           dict      # {"user": str, "product": str}
+    timestamp:      str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S")) # timestamp
+
 
 event_store: list[Event] = []
 """Append-only event store."""
 
-def place_order(user, item):
-    """Appends an order as an event."""
-    event_store.append(Event("item_added",   {"user": user, "item": item}))
 
-def cancel_order(user, item):
-    """Appends a cancellation as an event."""
-    event_store.append(Event("item_removed", {"user": user, "item": item}))
+def place_order(user: str, product: str):
+    """Adds an order as an event."""
+    new_event = Event("ADD", {"user": user, "product": product})
+    event_store.append(new_event)
 
-def get_orders(replay_mode=False):
+
+def cancel_order(user: str, product: str):
+    """Adds a cancellation as an event."""
+    new_event = Event("REMOVE", {"user": user, "product": product})
+    event_store.append(new_event)
+
+
+def _apply_event(orders: dict, event: Event) -> dict:
+    """Applies a single event to the current state."""
+    if event.event_type == "ADD":
+        return _add(orders, event.data)
+    if event.event_type == "REMOVE":
+        return _remove(orders, event.data)
+    raise ValueError(f"Unknown event type: {event.event_type}")
+
+
+def get_orders(replay_mode: bool = False) -> dict:
     """Computes current state by replaying all events."""
     orders = {}
     for event in event_store:
-        _apply(orders, event, print_event=replay_mode)
+        orders = _apply_event(orders, event)
         if replay_mode:
-            print(f"  [{event.ts}] {event.type:14}  {event.data['user']:6} · {event.data['item']:12}  →  {dict(orders)}")
-            time.sleep(0.6)
-    return {item: users for item, users in orders.items() if users}
-
-def _apply(orders, event, print_event=False):
-    """Applies a single event to the orders dict."""
-    item, user = event.data["item"], event.data["user"]
-    if event.type == "item_added": orders.setdefault(item, []).append(user)
-    elif event.type == "item_removed":
-        if item in orders and user in orders[item]: orders[item].remove(user)
-        elif print_event: print(f"⚠️  WARNING: '{user}' never ordered '{item}' – event ignored")
+            print(f"  {event.timestamp}  {event.event_type:8}  {event.data['user']:6} · {event.data['product']:12}  →  {orders}")
+            time.sleep(0.6)    
     return orders
+
+
+def _add(orders: dict, data: dict) -> dict:
+    """Adds an order to the orders dictionary."""
+    product = data["product"]
+    new_orders = orders.copy()
+    if product not in new_orders:
+        new_orders[product] = 1
+    elif product in new_orders:
+        new_orders[product] += 1
+    return new_orders
+
+
+def _remove(orders: dict, data: dict) -> dict:
+    """Removes an order from the orders dictionary."""
+    product = data["product"]
+    new_orders = orders.copy()
+    if product in new_orders:
+        new_orders[product] -= 1
+        if new_orders[product] == 0:
+            del new_orders[product]
+    return new_orders
 
 
 def _run_demo():
     """Runs a demo scenario with sample orders."""
     place_order("Anna", "Margherita")
-    place_order("Ben", "Flötzinger")
+    place_order("Ben",  "Flötzinger")
     cancel_order("Ben", "Flötzinger")
-    place_order("Ben", "Auer")
+    place_order("Ben",  "Auer")
     cancel_order("Ben", "Flötzinger")   # typo: already cancelled
     print("\nOrders:", get_orders())
     print("\nReplay:")
