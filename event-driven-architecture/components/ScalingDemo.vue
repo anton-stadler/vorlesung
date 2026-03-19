@@ -12,7 +12,7 @@ const WRK_X = 548  // links genug, damit Pods die Capacity (rechts bei 768) nich
 
 // ── Labels ────────────────────────────────────────────────────────────────────
 const VLABELS    = ['small', 'medium', 'large', 'x-large']
-const VCOSTS     = [1.00, 2.00, 4.00, 8.00]
+const VCOSTS     = [1.00, 2.00, 4.00, 16.00]
 const VRATE_MULT = [1, 2, 4, 8]   // multipliers relative to baseRate
 const MTITLES    = [
   'Direct Connection – Single Machine',
@@ -208,13 +208,15 @@ const throughput    = computed(() => Math.round(Math.min(processingRate.value, i
 const isOverloaded  = computed(() => mode.value === 1 && incomingRate.value > processingRate.value)
 const costPerHour   = computed(() => {
   if (mode.value <= 2) return VCOSTS[verticalSize.value - 1]
-  if (mode.value === 3) return manualWorkers.value * 0.5
-  return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * 0.5
+  if (mode.value === 3) return manualWorkers.value * 1.0
+  return Math.max(autoWorkers.value.filter(w => w.status === 'active').length, 1) * 1.0
 })
 
 const workerUtilPct = computed(() => {
   const cap = processingRate.value
-  return cap <= 0 ? 0 : Math.min(1, incomingRate.value / cap)
+  if (cap <= 0) return 0
+  if (queueLength.value > 0) return 1   // backlog → workers run at 100%
+  return Math.min(1, incomingRate.value / cap)
 })
 
 const effectiveLoad = computed(() =>
@@ -228,10 +230,16 @@ const latencyMs = computed(() => {
   return Math.round((queueLength.value / rate) * 1000 + PROCESSING_TIME_MS)
 })
 
-const queueBarW  = computed(() => Math.round((Math.min(queueLength.value, maxQueue.value) / maxQueue.value) * (BRW - 22)))
+// ── Smoothed display values (EMA, α=0.2) ──────────────────────────────────────
+const SMOOTH_ALPHA = 0.2
+const dispQueue   = ref(0)
+const dispLoad    = ref(0)
+const dispLatency = ref(0)
+
+const queueBarW  = computed(() => Math.round((Math.min(dispQueue.value, maxQueue.value) / maxQueue.value) * (BRW - 22)))
 const queueColor = computed(() =>
-  queueLength.value >= 8 ? C.value.red :
-  queueLength.value >= 5 ? C.value.orange :
+  dispQueue.value >= 8 ? C.value.red :
+  dispQueue.value >= 5 ? C.value.orange :
   C.value.cyan
 )
 
@@ -353,6 +361,12 @@ function tick() {
   }
   if (mode.value === 4) runKEDA()
   spawnBrokerPackets()
+  // EMA smoothing for display
+  dispQueue.value   = SMOOTH_ALPHA * queueLength.value   + (1 - SMOOTH_ALPHA) * dispQueue.value
+  dispLoad.value    = SMOOTH_ALPHA * effectiveLoad.value  + (1 - SMOOTH_ALPHA) * dispLoad.value
+  dispLatency.value = latencyMs.value != null
+    ? SMOOTH_ALPHA * latencyMs.value + (1 - SMOOTH_ALPHA) * dispLatency.value
+    : 0
 }
 
 // ── Mode switch ───────────────────────────────────────────────────────────────
@@ -702,7 +716,7 @@ onUnmounted(() => {
           <text :x="BRX + 36" :y="BRY + 21" :fill="C.fg" font-weight="bold"
                 style="font-size:11px">Message Broker</text>
           <text :x="BRX + 11" :y="BRY + 38" :fill="C.muted"
-                style="font-size:9px">Queue: {{ Math.round(queueLength) }} / {{ maxQueue }}</text>
+                style="font-size:9px">Queue: {{ Math.round(dispQueue) }} / {{ maxQueue }}</text>
           <rect :x="BRX + 11" :y="BRY + 43" :width="BRW - 22" height="9" rx="4" :fill="C.barBg" />
           <rect :x="BRX + 11" :y="BRY + 43" :width="queueBarW" height="9" rx="4" :fill="queueColor" />
           <line :x1="BRX + 11 + (5/maxQueue)*(BRW-22)" :y1="BRY + 42"
@@ -808,20 +822,20 @@ onUnmounted(() => {
     <div class="sd-metrics">
       <div v-if="mode > 1" class="metric">
         <div class="m-label">Queue</div>
-        <div class="m-val" :style="{ color: queueLength >= 8 ? C.red : queueLength >= 5 ? C.orange : undefined }">
-          {{ Math.round(queueLength) }}<span class="m-unit"> / {{ maxQueue }}</span>
+        <div class="m-val" :style="{ color: dispQueue >= 8 ? C.red : dispQueue >= 5 ? C.orange : undefined }">
+          {{ Math.round(dispQueue) }}<span class="m-unit"> / {{ maxQueue }}</span>
         </div>
       </div>
       <div class="metric">
         <div class="m-label">Load</div>
-        <div class="m-val" :style="{ color: effectiveLoad >= 0.9 ? C.red : effectiveLoad >= 0.6 ? C.orange : undefined }">
-          {{ Math.round(effectiveLoad * 100) }}<span class="m-unit">%</span>
+        <div class="m-val" :style="{ color: dispLoad >= 0.9 ? C.red : dispLoad >= 0.6 ? C.orange : undefined }">
+          {{ Math.round(dispLoad * 100) }}<span class="m-unit">%</span>
         </div>
       </div>
       <div class="metric">
         <div class="m-label">Latency</div>
         <div class="m-val">
-          <template v-if="latencyMs != null">≈ {{ latencyMs }}<span class="m-unit"> ms</span></template>
+          <template v-if="dispLatency > 0">≈ {{ Math.round(dispLatency) }}<span class="m-unit"> ms</span></template>
           <template v-else>—</template>
         </div>
       </div>

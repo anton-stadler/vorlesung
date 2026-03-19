@@ -266,13 +266,13 @@ routeAlias: tradeoffs
   <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">⚡</div>
     <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.1rem;text-align:center;">Latency</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Low response time.<br>Alarms processed within 2 s.</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Low response time.<br>Alarms processed within 10s.</div>
   </div>
 
   <div v-click style="border:1px solid var(--accent-green,#4ade80);border-radius:8px;padding:1.6rem 1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;">
     <div style="font-size:2.8rem;">💰</div>
     <div class="col-title" style="color:var(--accent-green,#16a34a);font-size:1.1rem;text-align:center;">Cost</div>
-    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>No idle workers at night.</div>
+    <div class="muted" style="font-size:0.85rem;text-align:center;line-height:1.7;">Pay per use.<br>Avoid idle workers.</div>
   </div>
 
 </div>
