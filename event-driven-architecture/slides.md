@@ -141,48 +141,57 @@ routeAlias: scaling
 
 <div class="slide-header"><span class="accent-pink">#</span> One big unit vs. many small ones</div>
 
-<div style="display:grid;grid-template-rows:auto 1fr;gap:0.8rem;flex:1;min-height:0;">
+<div style="display:grid;grid-template-rows:1fr auto auto;gap:0.8rem;flex:1;min-height:0;">
+
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:0;padding-top:0.4rem;">
+    <div v-click="1" style="display:flex;flex-direction:row;align-items:center;gap:0.6rem;justify-self:end;margin-right:3rem;">
+      <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-end;">
+        <span class="badge badge-orange" style="font-size:0.7rem;width:7.5rem;text-align:center;">scale up ↑</span>
+        <span class="badge badge-orange" style="font-size:0.7rem;width:7.5rem;text-align:center;">scale down ↓</span>
+      </div>
+      <img src="/images/vertical-scaling.png" style="max-height:10rem;max-width:12rem;object-fit:contain;" />
+    </div>
+    <div style="display:flex;align-items:center;justify-self:center;">
+      <img src="/images/single_drone.png" style="max-height:5rem;max-width:6rem;object-fit:contain;" />
+    </div>
+    <div v-click="2" style="display:flex;flex-direction:row;align-items:center;gap:0.6rem;justify-self:start;margin-left:3rem;">
+      <img src="/images/horizontal-scaling.png" style="max-height:10rem;max-width:12rem;object-fit:contain;" />
+      <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-start;">
+        <span class="badge badge-cyan" style="font-size:0.7rem;width:7.5rem;text-align:center;">scale out →</span>
+        <span class="badge badge-cyan" style="font-size:0.7rem;width:7.5rem;text-align:center;">scale in ←</span>
+      </div>
+    </div>
+  </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-    <div style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1rem 1.4rem;">
-      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">↑ Vertical Scaling</div>
-      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+    <div v-click="1" style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:0.3rem 0.7rem 0.3rem 1rem;">
+      <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:0.9rem;">↑ Vertical Scaling</div>
+      <ul class="check-list" style="font-size:0.82rem;margin-top:0.6rem;line-height:1.6;">
         <li>Low latency, simple model</li>
+        <li>Highest power for complex tasks</li>
       </ul>
-      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+      <ul class="cross-list" style="font-size:0.82rem;margin-top:0.2rem;line-height:1.6;">
         <li>Hardware limits</li>
         <li>Cost scales superlinearly</li>
       </ul>
     </div>
-    <div style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1rem 1.4rem;">
-      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">→ Horizontal Scaling</div>
-      <ul class="check-list" style="font-size:0.95rem;margin-top:0.8rem;line-height:2.1;">
+    <div v-click="2" style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:0.3rem 0.7rem 0.3rem 1rem;">
+      <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:0.9rem;">→ Horizontal Scaling</div>
+      <ul class="check-list" style="font-size:0.82rem;margin-top:0.6rem;line-height:1.6;">
         <li>Scales to any load</li>
         <li>Linear cost — pay per use</li>
       </ul>
-      <ul class="cross-list" style="font-size:0.95rem;margin-top:0.3rem;line-height:2.1;">
+      <ul class="cross-list" style="font-size:0.82rem;margin-top:0.2rem;line-height:1.6;">
+        <li>Tasks must be independent</li>
         <li>Network overhead &amp; coordination</li>
       </ul>
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0;gap:0.4rem;">
-    <div style="display:flex;justify-content:center;align-items:center;gap:1.5rem;flex:1;min-height:0;">
-      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
-        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale up ↑</span>
-        <span class="badge badge-orange" style="font-size:0.72rem;width:8rem;text-align:center;">scale down ↓</span>
-      </div>
-      <img src="/images/Scaling-Options.png" style="max-height:11rem;" />
-      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
-        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale out →</span>
-        <span class="badge badge-cyan" style="font-size:0.72rem;width:8rem;text-align:center;">scale in ←</span>
-      </div>
-    </div>
-    <div class="problem-insight" style="margin-top:0.2rem;">
-      <span class="accent-comment">»</span>
-      Swarm scales <span class="accent-cyan">horizontally</span> — needs a <span class="accent-orange">message broker.</span>
-      <span class="accent-comment">«</span>
-    </div>
+  <div v-click="3" class="problem-insight" style="margin:0;">
+    <span class="accent-comment">»</span>
+    Don't scale <span class="accent-orange">up</span> — scale <span class="accent-cyan">out.</span> If possible, keep every unit small and independent.
+    <span class="accent-comment">«</span>
   </div>
 
 </div>
@@ -201,7 +210,6 @@ routeAlias: autoscaling
   <div v-click style="border:1px solid var(--accent-cyan,#38bdf8);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">📬</div>
     <div class="col-title" style="color:var(--accent-cyan,#38bdf8);font-size:1.05rem;">Queue</div>
-    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">KEDA</div>
     <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
       Scale out when the queue grows.<br>
       Scale in when it empties.<br><br>
@@ -212,7 +220,6 @@ routeAlias: autoscaling
   <div v-click style="border:1px solid var(--accent-orange,#fb923c);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">🔥</div>
     <div class="col-title" style="color:var(--accent-orange,#fb923c);font-size:1.05rem;">Load / CPU</div>
-    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">HPA</div>
     <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
       Scale out when workers are hot.<br>
       Scale in when utilization drops.<br><br>
@@ -223,7 +230,6 @@ routeAlias: autoscaling
   <div v-click style="border:1px solid var(--accent-purple,#bd93f9);border-radius:8px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;">
     <div style="font-size:2rem;">⏱</div>
     <div class="col-title" style="color:var(--accent-purple,#bd93f9);font-size:1.05rem;">Latency</div>
-    <div style="font-size:0.75rem;color:var(--slide-muted,#64748B);font-style:italic;">deadline-driven</div>
     <div class="muted" style="font-size:0.88rem;line-height:1.7;flex:1;">
       Scale out when wait time exceeds the response-time limit.<br>
       Scale in when latency relaxes.<br><br>
