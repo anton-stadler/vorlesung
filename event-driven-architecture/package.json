@@ -7,10 +7,10 @@
     "export": "slidev export"
   },
   "dependencies": {
-    "@slidev/cli": "^52.14.1",
+    "@slidev/cli": "^52.9.1",
     "@slidev/theme-default": "^0.25.0",
     "slidev-addon-prime": "^0.3.1",
     "slidev-addon-rosenheim-shared": "file:../slidev-shared",
-    "slidev-theme-neversink": "^0.4.1"
+    "slidev-theme-neversink": "^0.4.0"
   }
 }
